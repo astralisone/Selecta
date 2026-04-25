@@ -1,0 +1,56 @@
+[workspace]
+members = [".", "src-tauri"]
+
+[package]
+name = "rekordbox-analyzer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# XML parsing for Rekordbox export
+quick-xml = { version = "0.36", features = ["serialize"] }
+serde = { version = "1", features = ["derive"] }
+
+# Audio decoding (pure Rust, handles MP3/FLAC/WAV/AIFF/M4A)
+symphonia = { version = "0.5", features = ["all"] }
+
+# DSP primitives for feature extraction
+rustfft = "6.2"
+
+# Parallelism
+rayon = "1.10"
+
+# Storage
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+# CLI and logging
+clap = { version = "4", features = ["derive"] }
+indicatif = "0.17"
+anyhow = "1"
+
+# URL decoding for Rekordbox file:// paths
+urlencoding = "2"
+
+[lib]
+name = "rekordbox_analyzer"
+path = "src/lib.rs"
+
+[[bin]]
+name = "rekordbox-analyzer"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+
+# Make `tauri dev` usable for real analysis: leave workspace crates
+# unoptimized (fast rebuilds) but optimize all dependencies (symphonia,
+# rustfft, rayon…). Without this, audio decode + FFT is 5–20× slower in
+# debug than release.
+[profile.dev.package."*"]
+opt-level = 3
+
+# Keep our own crate fast to iterate on, but bump opt-level a notch so
+# loops in features.rs aren't pathologically slow in debug.
+[profile.dev]
+opt-level = 1
