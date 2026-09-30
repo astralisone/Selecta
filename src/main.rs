@@ -6,10 +6,10 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Instant;
 
-use rekordbox_analyzer::export::{energy_score, write_m3u8};
-use rekordbox_analyzer::keys::Camelot;
-use rekordbox_analyzer::store::{Store, TrackRow};
-use rekordbox_analyzer::{audio, features, rekordbox};
+use track2mix_core::export::{energy_score, write_m3u8};
+use track2mix_core::keys::Camelot;
+use track2mix_core::store::{Store, TrackRow};
+use track2mix_core::{audio, features, rekordbox};
 
 /// 22050 Hz retains everything up to ~11 kHz — ample for MIR features and
 /// roughly half the work of 44.1 kHz.
@@ -17,7 +17,7 @@ const ANALYSIS_SR: u32 = 22050;
 
 #[derive(Parser)]
 #[command(
-    name = "rekordbox-analyzer",
+    name = "track2mix",
     about = "Parse a Rekordbox library, extract audio features, and query the result."
 )]
 struct Cli {

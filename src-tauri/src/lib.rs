@@ -1,7 +1,7 @@
-use rekordbox_analyzer::analyze::{self, AnalyzeOptions, AnalyzeSummary};
-use rekordbox_analyzer::export::{energy_score as energy_score_fn, write_m3u8};
-use rekordbox_analyzer::keys::Camelot;
-use rekordbox_analyzer::store::{Store, TrackRow};
+use track2mix_core::analyze::{self, AnalyzeOptions, AnalyzeSummary};
+use track2mix_core::export::{energy_score as energy_score_fn, write_m3u8};
+use track2mix_core::keys::Camelot;
+use track2mix_core::store::{Store, TrackRow};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::Mutex;

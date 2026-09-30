@@ -50,11 +50,11 @@ function App() {
     React.useState<AnalyzeSummary | null>(null);
 
   const [skipAnalyzed, setSkipAnalyzed] = React.useState<boolean>(() => {
-    const stored = localStorage.getItem("selecta.skipAnalyzed");
+    const stored = localStorage.getItem("track2mix.skipAnalyzed");
     return stored === null ? true : stored === "true";
   });
   React.useEffect(() => {
-    localStorage.setItem("selecta.skipAnalyzed", String(skipAnalyzed));
+    localStorage.setItem("track2mix.skipAnalyzed", String(skipAnalyzed));
   }, [skipAnalyzed]);
 
   // Bootstrap: fetch default path and open.
@@ -269,7 +269,7 @@ function App() {
         <div className="flex items-center gap-2 pl-16">
           <Disc3 className="h-4 w-4 text-iris-300" />
           <span className="text-sm font-medium tracking-tight">
-            Selecta
+            Track2Mix
           </span>
           {summary && (
             <>
@@ -358,7 +358,7 @@ function App() {
                   </div>
                   <div className="text-xs text-muted-foreground mb-4">
                     In Rekordbox: <span className="text-foreground">File →
-                    Export Collection in xml format</span>, then point Selecta
+                    Export Collection in xml format</span>, then point Track2Mix
                     at the file.
                   </div>
                   <div className="flex items-center justify-center gap-2">
@@ -451,7 +451,7 @@ function App() {
         open={showExport}
         onOpenChange={setShowExport}
         selectedIds={Array.from(selected)}
-        defaultName={anchor ? `${anchor.name} — Selecta` : "Selecta mix"}
+        defaultName={anchor ? `${anchor.name} — Track2Mix` : "Track2Mix set"}
       />
 
       {analyzing && (

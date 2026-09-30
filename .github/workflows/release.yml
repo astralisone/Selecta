@@ -1,0 +1,86 @@
+name: Release
+
+# Tagging v* builds signed desktop bundles and publishes them as a GitHub
+# Release. macOS builds are signed + notarized when the APPLE_* secrets are
+# present; without them the build still succeeds and produces an unsigned
+# bundle, so the pipeline is usable before the Apple Developer enrolment
+# completes. See docs/CODE-SIGNING.md.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to build and publish (e.g. v0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            target: universal-apple-darwin
+            label: macOS (Universal)
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+            label: Windows (x64)
+
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            . -> target
+          key: ${{ matrix.target }}
+
+      - name: Install frontend dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build, sign and publish
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # macOS signing + notarization. Absent → unsigned bundle, build still
+          # succeeds. tauri-action skips signing when these are unset.
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        with:
+          projectPath: .
+          tagName: ${{ github.event.inputs.tag || github.ref_name }}
+          releaseName: "Track2Mix ${{ github.event.inputs.tag || github.ref_name }}"
+          releaseBody: |
+            Download the build for your platform below.
+
+            **macOS:** open the `.dmg` and drag Track2Mix to Applications.
+            **Windows:** run the `.msi` installer.
+
+            Installation notes and troubleshooting: [docs/INSTALL.md](https://github.com/astralisone/selecta/blob/main/docs/INSTALL.md)
+          releaseDraft: true
+          prerelease: false
+          includeUpdaterJson: false
+          args: --target ${{ matrix.target }}

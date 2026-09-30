@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  rust:
+    name: Rust
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: swatinem/rust-cache@v2
+
+      # src-tauri needs system GTK/WebKit to build on Linux; the analyzer crate
+      # does not. CI checks the analyzer, which is where the logic lives. The
+      # GUI is compiled on macOS and Windows by the release workflow.
+      - name: Build
+        run: cargo check --package track2mix --all-targets
+
+      - name: Test
+        run: cargo test --package track2mix
+
+      # Advisory, not blocking: the codebase is not currently rustfmt-clean and
+      # carries a handful of clippy lints. These steps surface them without
+      # failing the build. Once `cargo fmt` has been run across the tree and the
+      # lints are cleared, drop continue-on-error and add `-D warnings` to make
+      # them enforcing.
+      - name: Format (advisory)
+        continue-on-error: true
+        run: cargo fmt --package track2mix -- --check
+
+      - name: Clippy (advisory)
+        continue-on-error: true
+        run: cargo clippy --package track2mix --all-targets
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Typecheck and build
+        run: bun run build
+
+  site:
+    name: Site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check site JavaScript parses
+        run: node --check site/main.js
+      - name: Check the configuration constants are set
+        # The site ships with SIGNUP_ENDPOINT and TIP_BASE_URL empty. Both fail
+        # loudly in the browser rather than silently, but a deployed site with
+        # either unset is a broken funnel, so flag it here. Advisory until the
+        # providers are chosen.
+        continue-on-error: true
+        run: |
+          set -e
+          for const in SIGNUP_ENDPOINT TIP_BASE_URL; do
+            if grep -qE "^const ${const} = \"\";" site/main.js; then
+              echo "::warning file=site/main.js::${const} is still empty — the site funnel is incomplete."
+            else
+              echo "${const} is configured."
+            fi
+          done
