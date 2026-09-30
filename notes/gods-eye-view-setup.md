@@ -7,6 +7,30 @@ cameras. It runs entirely on your machine and starts with **no API keys**.
 Every step below was executed end to end on a clean checkout; the results are at the
 bottom. Verified **2026-09-30** against GEV `v0.1.1` (commit `e7707d9`) on Linux x64.
 
+## 0. Or just run the script
+
+`notes/gods-eye-view-setup.sh` does everything below, doing as much as the machine
+allows rather than stopping at the first thing it can't manage. Each step reports
+`OK` / `SKIP` / `FAIL`, and the exit status is the number of hard failures.
+
+```bash
+notes/gods-eye-view-setup.sh              # set up in ~/gods-eye-view, then start it
+notes/gods-eye-view-setup.sh --check      # report what's there, change nothing
+notes/gods-eye-view-setup.sh --no-start   # set up only
+notes/gods-eye-view-setup.sh --verify     # also run the build and unit suite
+notes/gods-eye-view-setup.sh --dir ~/src/gev --port 5173
+```
+
+It finds a supported Node or fetches one (`fnm`, `volta`, or the official tarball
+under `~/.local/gev-node`), clones or fast-forwards the checkout, runs `npm ci`,
+creates `.env` owner-only if there isn't one, runs the setup doctor, and starts the
+dev server — waiting until it actually answers before claiming success. Re-running is
+safe: an existing `.env` is never overwritten, and a checkout with local changes is
+left alone instead of pulled.
+
+`nvm` is a shell function rather than a binary, so the script can't see it. If that's
+your setup, `nvm use 24` first and the script will take the Node already on `PATH`.
+
 ## 1. Node
 
 GEV pins `node: >=24.14.0 <25 || >=26 <27`. Node 22 or 25 will not install — 25 is EOL
