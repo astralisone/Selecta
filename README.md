@@ -11,6 +11,7 @@ Runs entirely offline. No account, no upload, no server.
 
 - 🌐 **Site:** `site/` — static landing page, see [site/README.md](site/README.md)
 - 📈 **Go-to-market:** [GO-TO-MARKET.md](GO-TO-MARKET.md)
+- 🚀 **Deploy the site:** [docs/DEPLOY.md](docs/DEPLOY.md)
 - 💾 **Install:** [docs/INSTALL.md](docs/INSTALL.md)
 - 🔑 **Signing a release:** [docs/CODE-SIGNING.md](docs/CODE-SIGNING.md)
 
