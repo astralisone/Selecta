@@ -23,7 +23,7 @@ jobs:
         run: cargo check --package track2mix --all-targets
 
       - name: Test
-        run: cargo test --package track2mix
+        run: cargo test --package track2mix --all-targets
 
       # Advisory, not blocking: the codebase is not currently rustfmt-clean and
       # carries a handful of clippy lints. These steps surface them without
