@@ -33,6 +33,7 @@
     </a>
     <nav class="nav-links">
       <a href="#how">How it works</a>
+      <a href="#analysis">The analysis</a>
       <a href="#features">Features</a>
       <a href="#honest">What it does &amp; doesn't</a>
       <a href="#faq">FAQ</a>
@@ -186,7 +187,7 @@
         </div>
         <div class="step">
           <h3>Let it listen</h3>
-          <p>Track2Mix decodes every track — MP3, FLAC, WAV, AIFF, M4A — and pulls out loudness, dynamics, brightness, spectral movement and onset density, in parallel, across all your cores.</p>
+          <p>Track2Mix decodes every track — MP3, FLAC, WAV, AIFF, M4A — and measures loudness, dynamics, brightness, spectral movement and rhythmic density, in parallel, across all your cores.</p>
         </div>
         <div class="step">
           <h3>Dig, then export</h3>
@@ -205,6 +206,101 @@ track2mix compat <span class="p">"the track you're opening with"</span> <span cl
 
   <hr class="rule">
 
+  <!-- ================= ANALYSIS ================= -->
+  <section id="analysis">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Under the hood</p>
+        <h2>It listens to the record, not the metadata.</h2>
+        <p>
+          Genre tags and star ratings describe what you thought about a track
+          the day you filed it. Track2Mix ignores all of that and decodes the
+          actual audio, because the only thing that reliably predicts whether
+          two records sit together is what's in the waveform.
+        </p>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <ul class="speclist">
+            <li>
+              <svg class="yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 18V6M9 21V3M14 18V6M19 15V9"/></svg>
+              <span><b>Loudness and dynamic range.</b> How hard it hits, and how much it breathes. A compressed roller and a track that swings between silence and full weight can average out the same — telling them apart is most of the job.</span>
+            </li>
+            <li>
+              <svg class="yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+              <span><b>Spectral brightness.</b> Where the weight of the sound actually sits. This is what separates something dark and sub-heavy from something crisp and forward, long before you'd call it a genre.</span>
+            </li>
+            <li>
+              <svg class="yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 17c3-6 6-6 9 0s6 6 9 0"/></svg>
+              <span><b>Spectral movement.</b> How much the sound changes moment to moment. A track that evolves and a track that loops can share every other number and feel nothing alike in a mix.</span>
+            </li>
+            <li>
+              <svg class="yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h2l2-5 3 10 2-5h5"/></svg>
+              <span><b>Rhythmic density.</b> How busy the percussion is, independent of tempo. Two tracks at the same BPM can be miles apart on this, and it's usually what makes a transition feel rushed or flat.</span>
+            </li>
+          </ul>
+
+          <p class="analysis-note">
+            Those signals are combined into one energy value per track, weighted
+            so the result matches how a set actually feels rather than what a
+            meter says. Getting that balance right is the part I've spent the
+            most time on, and it's what the beta is for.
+          </p>
+        </div>
+
+        <div>
+          <div class="glass signal-card">
+            <p class="signal-title">One track, four signals, one number</p>
+            <div class="signal-rows">
+              <div class="signal-row">
+                <span class="signal-label">Loudness &amp; dynamics</span>
+                <span class="meter"><span style="width:74%"></span></span>
+              </div>
+              <div class="signal-row">
+                <span class="signal-label">Brightness</span>
+                <span class="meter"><span style="width:52%"></span></span>
+              </div>
+              <div class="signal-row">
+                <span class="signal-label">Movement</span>
+                <span class="meter"><span style="width:81%"></span></span>
+              </div>
+              <div class="signal-row">
+                <span class="signal-label">Rhythmic density</span>
+                <span class="meter"><span style="width:66%"></span></span>
+              </div>
+            </div>
+            <div class="signal-out">
+              <span class="signal-out-label">Energy</span>
+              <span class="signal-out-value">7.4</span>
+            </div>
+            <p class="signal-foot">Then ranked against every harmonically compatible track in your library.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:28px">
+        <div class="card">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg></div>
+          <h3>It doesn't grind through whole files</h3>
+          <p>Decoding every second of every track would make a big library an overnight job. Track2Mix samples a handful of representative stretches across each record instead — enough to characterise it, at a fraction of the cost, across every core you have.</p>
+        </div>
+        <div class="card">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 3"/></svg></div>
+          <h3>Energy is the tiebreaker, not the whole answer</h3>
+          <p>Harmonic and tempo compatibility decide which tracks are eligible. Energy decides the order. That's the part Rekordbox can't do for you — turning six hundred technically-valid options into five worth auditioning.</p>
+        </div>
+        <div class="card">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v18"/><path d="m5 10 7-7 7 7"/></svg></div>
+          <h3>Built to be corrected</h3>
+          <p>The weighting is tuned by ear on real libraries, which means it can be wrong on yours. Every score is visible and sortable, so you can check it against tracks you know cold — and tell me where it's off.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
   <!-- ================= FEATURES ================= -->
   <section id="features">
     <div class="wrap">
@@ -216,7 +312,7 @@ track2mix compat <span class="p">"the track you're opening with"</span> <span cl
         <div class="card">
           <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18V6M9 21V3M14 18V6M19 15V9"/></svg></div>
           <h3>A real energy score</h3>
-          <p>Every track gets a 0–10 energy value derived from its actual waveform — loudness, dynamic range, brightness, spectral movement and onset density. Sort by it and your hardest tracks rise to the top.</p>
+          <p>Every track gets a 0–10 energy value derived from its actual waveform — loudness, dynamic range, brightness, spectral movement and rhythmic density. Sort by it and your hardest tracks rise to the top.</p>
         </div>
         <div class="card">
           <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 3"/></svg></div>
@@ -231,7 +327,7 @@ track2mix compat <span class="p">"the track you're opening with"</span> <span cl
         <div class="card">
           <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg></div>
           <h3>Fast enough to actually run</h3>
-          <p>Written in Rust, parallelised across every core, and it samples three thirty-second windows instead of grinding whole files — enough to characterise a track at a fraction of the cost.</p>
+          <p>Written in Rust and parallelised across every core, and it samples representative stretches of each record rather than grinding through whole files — enough to characterise a track at a fraction of the cost.</p>
         </div>
         <div class="card">
           <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15V8a2 2 0 0 0-2-2h-7L9 3H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2Z"/></svg></div>
@@ -411,7 +507,7 @@ track2mix compat <span class="p">"the track you're opening with"</span> <span cl
         </details>
         <details>
           <summary>How long does analysis take?</summary>
-          <p>It depends on your machine and your library, and it's parallelised across all your cores. Because Track2Mix samples three thirty-second windows per track rather than decoding whole files, it's dramatically cheaper than a full Rekordbox re-analysis. Use <code>--dry-run</code> first to see how many of your tracks actually resolve to files on disk before committing to a long run.</p>
+          <p>It depends on your machine and your library, and it's parallelised across all your cores. Because Track2Mix samples representative stretches of each track rather than decoding whole files, it's dramatically cheaper than a full Rekordbox re-analysis. Use <code>--dry-run</code> first to see how many of your tracks actually resolve to files on disk before committing to a long run.</p>
         </details>
         <details>
           <summary>Why does it need keys from Rekordbox instead of detecting its own?</summary>
