@@ -33,6 +33,10 @@
 
   --maxw: 1120px;
   --gutter: 16px;
+
+  /* Deliberately single-theme: this is a dark product surface, not a
+     light page inverted. Tell the UA so controls and scrollbars follow. */
+  color-scheme: dark;
 }
 
 *,
@@ -271,7 +275,7 @@ p {
 
 .nav {
   position: sticky;
-  top: 0;
+  top: env(safe-area-inset-top, 0px);
   z-index: 50;
   background: rgba(1, 2, 15, 0.72);
   backdrop-filter: blur(14px);
