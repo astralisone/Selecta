@@ -1091,3 +1091,300 @@ footer {
   color: var(--fg-faint);
   line-height: 1.55;
 }
+
+/* ==========================================================================
+   Animated figures
+   --------------------------------------------------------------------------
+   Every animation here runs FROM a start state TO the element's natural
+   resting state, and only once .in-view is set by main.js. With JS disabled,
+   or with prefers-reduced-motion, nothing is left mid-flight: the page renders
+   in its finished state, which is what a thumbnail or a screen reader gets.
+   ========================================================================== */
+
+.fig {
+  margin: 28px 0 0;
+}
+
+.fig svg {
+  width: 100%;
+  height: auto;
+  color: var(--fg-muted);
+}
+
+.fig figcaption {
+  margin-top: 14px;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--fg-faint);
+  max-width: 62ch;
+}
+
+.fig figcaption b {
+  color: var(--iris-200);
+  font-weight: 600;
+}
+
+/* ---------- narrowing funnel ---------- */
+
+.fbar {
+  fill: rgba(87, 90, 208, 0.55);
+  transform-origin: left center;
+}
+
+.fbar-hot {
+  fill: var(--gold-300);
+}
+
+.fig-cap,
+.fig-step {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  fill: var(--fg-faint);
+}
+
+.fig-step {
+  letter-spacing: 0.04em;
+  text-transform: none;
+  font-size: 11px;
+}
+
+.fig-n {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  fill: var(--fg);
+  /* Sits to the RIGHT of each bar. Anchoring at the end pulls the number back
+     over the bar it is labelling. */
+  text-anchor: start;
+}
+
+.fig-n-hot {
+  fill: var(--gold-200);
+}
+
+.fig-sub {
+  font-size: 12.5px;
+  fill: var(--fg-muted);
+}
+
+.fline {
+  stroke: rgba(255, 255, 255, 0.18);
+  stroke-width: 1.5;
+}
+
+[data-animate="funnel"].in-view .fbar {
+  animation: funnel-narrow 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+[data-animate="funnel"].in-view .fbar:nth-of-type(1) { animation-delay: 0ms; }
+[data-animate="funnel"].in-view .fbar:nth-of-type(2) { animation-delay: 260ms; }
+[data-animate="funnel"].in-view .fbar:nth-of-type(3) { animation-delay: 520ms; }
+[data-animate="funnel"].in-view .fbar:nth-of-type(4) { animation-delay: 780ms; }
+
+@keyframes funnel-narrow {
+  from { transform: scaleX(var(--from)); opacity: 0.35; }
+  to   { transform: scaleX(1);           opacity: 1; }
+}
+
+/* ---------- Camelot wheel ---------- */
+
+.fig-wheel {
+  margin-top: 22px;
+}
+
+.fig-wheel svg {
+  max-width: 300px;
+  margin-inline: auto;
+}
+
+.seg {
+  fill: rgba(255, 255, 255, 0.045);
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-width: 1;
+}
+
+.seg-ok {
+  fill: rgba(87, 90, 208, 0.45);
+  stroke: rgba(126, 128, 229, 0.7);
+}
+
+.seg-anchor {
+  fill: rgba(245, 183, 28, 0.5);
+  stroke: rgba(245, 183, 28, 0.85);
+}
+
+.wl {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  fill: var(--fg-faint);
+  text-anchor: middle;
+}
+
+.wl-hot {
+  fill: #fff;
+}
+
+/* The anchor lands first, then the three keys it opens up. */
+[data-animate="wheel"].in-view .seg-anchor {
+  animation: seg-land 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+[data-animate="wheel"].in-view .seg-ok {
+  animation: seg-land 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* nth-of-type counts paths, not .seg-ok paths, so the stagger is carried
+   per-element as --d instead. */
+[data-animate="wheel"].in-view .seg-ok { animation-delay: var(--d, 0ms); }
+
+@keyframes seg-land {
+  from { fill: rgba(255, 255, 255, 0.045); stroke: rgba(255, 255, 255, 0.07); }
+}
+
+/* ---------- energy ranking demo ---------- */
+
+.ranking-demo {
+  display: grid;
+  gap: clamp(24px, 4vw, 44px);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  margin-bottom: clamp(32px, 5vw, 52px);
+  padding: clamp(24px, 3.5vw, 34px);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--hairline-soft);
+  background: rgba(6, 7, 26, 0.45);
+}
+
+@media (min-width: 900px) {
+  .ranking-demo {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  }
+}
+
+.ranking-head h3 {
+  font-size: clamp(1.125rem, 2vw, 1.4rem);
+  margin: 12px 0 10px;
+}
+
+.ranking-head p {
+  color: var(--fg-muted);
+  font-size: 0.9375rem;
+}
+
+.rank-replay {
+  margin-top: 18px;
+  padding: 9px 15px;
+  font-size: 0.875rem;
+}
+
+.rank-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  --row-h: 44px;
+}
+
+.rank-row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 90px 26px;
+  align-items: center;
+  gap: 12px;
+  height: 38px;
+  padding-inline: 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.045);
+}
+
+.rank-pos {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-faint);
+}
+
+.rank-name {
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rank-val {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-align: right;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.rank-row:first-child .rank-val {
+  color: var(--gold-200);
+}
+
+/* Each row flies in from where alphabetical order would have put it.
+   Driven by a transition rather than a filled animation: JS sets .rank-from,
+   forces a reflow, then removes it, so the rows travel TO their resting
+   state. If transitions never run the rows simply appear finished — they can
+   never be left stranded off-screen or at zero opacity, which is the failure
+   mode a filled animation would have. */
+.rank-row {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 780ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 420ms ease-out;
+}
+
+.ranking-demo.rank-from .rank-row {
+  transform: translateY(calc(var(--shift) * var(--row-h)));
+  opacity: 0;
+  transition: none;
+}
+
+.rank-meter > span {
+  transform: scaleX(1);
+  transition: transform 700ms 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ranking-demo.rank-from .rank-meter > span {
+  transform: scaleX(0);
+  transition: none;
+}
+
+@keyframes meter-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.meter > span {
+  transform-origin: left center;
+}
+
+/* ---------- signal card ---------- */
+
+[data-animate="signals"].in-view .meter > span {
+  animation: meter-fill 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+[data-animate="signals"].in-view .signal-row:nth-child(1) .meter > span { animation-delay: 0ms; }
+[data-animate="signals"].in-view .signal-row:nth-child(2) .meter > span { animation-delay: 110ms; }
+[data-animate="signals"].in-view .signal-row:nth-child(3) .meter > span { animation-delay: 220ms; }
+[data-animate="signals"].in-view .signal-row:nth-child(4) .meter > span { animation-delay: 330ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Snap straight to the finished state rather than racing through it. */
+  .rank-row,
+  .rank-meter > span {
+    transition: none !important;
+  }
+
+  [data-animate].in-view .fbar,
+  [data-animate].in-view .seg,
+  [data-animate].in-view .meter > span {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}

@@ -162,6 +162,47 @@
           <p>Tracks you bought, tagged, and never opened again. The whole point of a library is that you can reach all of it.</p>
         </div>
       </div>
+
+      <figure class="fig" data-animate="funnel">
+        <svg viewBox="0 0 640 268" role="img" aria-label="A library of 8,412 tracks narrowed by harmonic compatibility to 1,402, then by BPM tolerance to 118, then ranked by energy to a shortlist of 5.">
+          <defs>
+            <marker id="fa" viewBox="0 0 8 8" refX="4" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+              <path d="M0 0 L8 4 L0 8 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <text class="fig-cap" x="0" y="14">YOUR LIBRARY</text>
+          <rect class="fbar" style="--from:1"     x="0" y="24" width="320" height="26" rx="5"/>
+          <text class="fig-n"   x="332" y="42">8,412</text>
+          <text class="fig-sub" x="392" y="42">tracks</text>
+
+          <line class="fline" x1="10" y1="58" x2="10" y2="80" marker-end="url(#fa)"/>
+          <text class="fig-step" x="24" y="76">same key, ±1 on the wheel, or the relative major</text>
+
+          <rect class="fbar" style="--from:1.245" x="0" y="88" width="257" height="26" rx="5"/>
+          <text class="fig-n"   x="269" y="106">1,402</text>
+          <text class="fig-sub" x="329" y="106">harmonically compatible</text>
+
+          <line class="fline" x1="10" y1="122" x2="10" y2="144" marker-end="url(#fa)"/>
+          <text class="fig-step" x="24" y="140">inside your BPM tolerance</text>
+
+          <rect class="fbar" style="--from:1.521" x="0" y="152" width="169" height="26" rx="5"/>
+          <text class="fig-n"   x="181" y="170">118</text>
+          <text class="fig-sub" x="223" y="170">also tempo-compatible</text>
+
+          <line class="fline" x1="10" y1="186" x2="10" y2="208" marker-end="url(#fa)"/>
+          <text class="fig-step" x="24" y="204">ranked by energy</text>
+
+          <rect class="fbar fbar-hot" style="--from:2.965" x="0" y="216" width="57" height="26" rx="5"/>
+          <text class="fig-n fig-n-hot" x="69" y="234">5</text>
+          <text class="fig-sub" x="95" y="234">worth auditioning</text>
+        </svg>
+        <figcaption>
+          Rekordbox can do the first cut. It has no way to do the last one — which is
+          why its version of this list is still hundreds long. Bars are log-scaled so
+          the shortlist stays visible; the counts are illustrative.
+        </figcaption>
+      </figure>
     </div>
   </section>
 
@@ -250,7 +291,7 @@ track2mix compat <span class="p">"the track you're opening with"</span> <span cl
         </div>
 
         <div>
-          <div class="glass signal-card">
+          <div class="glass signal-card" data-animate="signals">
             <p class="signal-title">One track, four signals, one number</p>
             <div class="signal-rows">
               <div class="signal-row">
@@ -276,6 +317,63 @@ track2mix compat <span class="p">"the track you're opening with"</span> <span cl
             </div>
             <p class="signal-foot">Then ranked against every harmonically compatible track in your library.</p>
           </div>
+
+          <figure class="fig fig-wheel" data-animate="wheel">
+            <svg viewBox="0 0 232 232" role="img" aria-label="A Camelot wheel with 8A as the anchor. The compatible keys 7A, 9A and 8B are highlighted; the other twenty are not.">
+    <path class="seg" data-key="1B" d="M90.4 13.1A106 106 0 0 1 141.6 13.1L134.9 40.3A78 78 0 0 0 97.1 40.3Z"/>
+    <text class="wl" x="116.0" y="27.5">1B</text>
+    <path class="seg" data-key="1A" d="M98.1 44.2A74 74 0 0 1 133.9 44.2L127.1 71.4A46 46 0 0 0 104.9 71.4Z"/>
+    <text class="wl" x="116.0" y="59.5">1A</text>
+    <path class="seg" data-key="2B" d="M145.2 14.1A106 106 0 0 1 189.6 39.7L170.2 59.9A78 78 0 0 0 137.5 41.0Z"/>
+    <text class="wl" x="162.0" y="39.8">2B</text>
+    <path class="seg" data-key="2A" d="M136.4 44.9A74 74 0 0 1 167.4 62.8L148.0 82.9A46 46 0 0 0 128.7 71.8Z"/>
+    <text class="wl" x="146.0" y="67.5">2A</text>
+    <path class="seg" data-key="3B" d="M192.3 42.4A106 106 0 0 1 217.9 86.8L191.0 94.5A78 78 0 0 0 172.1 61.8Z"/>
+    <text class="wl" x="195.7" y="73.5">3B</text>
+    <path class="seg" data-key="3A" d="M169.2 64.6A74 74 0 0 1 187.1 95.6L160.2 103.3A46 46 0 0 0 149.1 84.0Z"/>
+    <text class="wl" x="168.0" y="89.5">3A</text>
+    <path class="seg" data-key="4B" d="M218.9 90.4A106 106 0 0 1 218.9 141.6L191.7 134.9A78 78 0 0 0 191.7 97.1Z"/>
+    <text class="wl" x="208.0" y="119.5">4B</text>
+    <path class="seg" data-key="4A" d="M187.8 98.1A74 74 0 0 1 187.8 133.9L160.6 127.1A46 46 0 0 0 160.6 104.9Z"/>
+    <text class="wl" x="176.0" y="119.5">4A</text>
+    <path class="seg" data-key="5B" d="M217.9 145.2A106 106 0 0 1 192.3 189.6L172.1 170.2A78 78 0 0 0 191.0 137.5Z"/>
+    <text class="wl" x="195.7" y="165.5">5B</text>
+    <path class="seg" data-key="5A" d="M187.1 136.4A74 74 0 0 1 169.2 167.4L149.1 148.0A46 46 0 0 0 160.2 128.7Z"/>
+    <text class="wl" x="168.0" y="149.5">5A</text>
+    <path class="seg" data-key="6B" d="M189.6 192.3A106 106 0 0 1 145.2 217.9L137.5 191.0A78 78 0 0 0 170.2 172.1Z"/>
+    <text class="wl" x="162.0" y="199.2">6B</text>
+    <path class="seg" data-key="6A" d="M167.4 169.2A74 74 0 0 1 136.4 187.1L128.7 160.2A46 46 0 0 0 148.0 149.1Z"/>
+    <text class="wl" x="146.0" y="171.5">6A</text>
+    <path class="seg" data-key="7B" d="M141.6 218.9A106 106 0 0 1 90.4 218.9L97.1 191.7A78 78 0 0 0 134.9 191.7Z"/>
+    <text class="wl" x="116.0" y="211.5">7B</text>
+    <path class="seg seg-ok" style="--d:300ms" data-key="7A" d="M133.9 187.8A74 74 0 0 1 98.1 187.8L104.9 160.6A46 46 0 0 0 127.1 160.6Z"/>
+    <text class="wl wl-hot" x="116.0" y="179.5">7A</text>
+    <path class="seg seg-ok" style="--d:430ms" data-key="8B" d="M86.8 217.9A106 106 0 0 1 42.4 192.3L61.8 172.1A78 78 0 0 0 94.5 191.0Z"/>
+    <text class="wl wl-hot" x="70.0" y="199.2">8B</text>
+    <path class="seg seg-anchor" data-key="8A" d="M95.6 187.1A74 74 0 0 1 64.6 169.2L84.0 149.1A46 46 0 0 0 103.3 160.2Z"/>
+    <text class="wl wl-hot" x="86.0" y="171.5">8A</text>
+    <path class="seg" data-key="9B" d="M39.7 189.6A106 106 0 0 1 14.1 145.2L41.0 137.5A78 78 0 0 0 59.9 170.2Z"/>
+    <text class="wl" x="36.3" y="165.5">9B</text>
+    <path class="seg seg-ok" style="--d:560ms" data-key="9A" d="M62.8 167.4A74 74 0 0 1 44.9 136.4L71.8 128.7A46 46 0 0 0 82.9 148.0Z"/>
+    <text class="wl wl-hot" x="64.0" y="149.5">9A</text>
+    <path class="seg" data-key="10B" d="M13.1 141.6A106 106 0 0 1 13.1 90.4L40.3 97.1A78 78 0 0 0 40.3 134.9Z"/>
+    <text class="wl" x="24.0" y="119.5">10B</text>
+    <path class="seg" data-key="10A" d="M44.2 133.9A74 74 0 0 1 44.2 98.1L71.4 104.9A46 46 0 0 0 71.4 127.1Z"/>
+    <text class="wl" x="56.0" y="119.5">10A</text>
+    <path class="seg" data-key="11B" d="M14.1 86.8A106 106 0 0 1 39.7 42.4L59.9 61.8A78 78 0 0 0 41.0 94.5Z"/>
+    <text class="wl" x="36.3" y="73.5">11B</text>
+    <path class="seg" data-key="11A" d="M44.9 95.6A74 74 0 0 1 62.8 64.6L82.9 84.0A46 46 0 0 0 71.8 103.3Z"/>
+    <text class="wl" x="64.0" y="89.5">11A</text>
+    <path class="seg" data-key="12B" d="M42.4 39.7A106 106 0 0 1 86.8 14.1L94.5 41.0A78 78 0 0 0 61.8 59.9Z"/>
+    <text class="wl" x="70.0" y="39.8">12B</text>
+    <path class="seg" data-key="12A" d="M64.6 62.8A74 74 0 0 1 95.6 44.9L103.3 71.8A46 46 0 0 0 84.0 82.9Z"/>
+    <text class="wl" x="86.0" y="67.5">12A</text>
+            </svg>
+            <figcaption>
+              Anchor in <b>8A</b>. Four of twenty-four slots work: itself, one step
+              either way, and the relative major. Everything else is the wrong list.
+            </figcaption>
+          </figure>
         </div>
       </div>
 
@@ -308,6 +406,71 @@ track2mix compat <span class="p">"the track you're opening with"</span> <span cl
         <p class="eyebrow">What you get</p>
         <h2>Built for people with more tracks than they can remember.</h2>
       </div>
+      <div class="ranking-demo" data-animate="ranking">
+        <div class="ranking-head">
+          <p class="eyebrow" style="margin:0">Sort by energy</p>
+          <h3>The same eight tracks, reordered by how hard they hit.</h3>
+          <p>
+            Alphabetical order tells you nothing about a set. Energy order tells you
+            where each record belongs in one — and it is the same click either way.
+          </p>
+          <button class="btn btn-ghost rank-replay" type="button">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+            Replay
+          </button>
+        </div>
+        <ol class="rank-list">
+            <li class="rank-row" style="--shift:4;--e:10">
+              <span class="rank-pos">1</span>
+              <span class="rank-name">Peak-time neuro</span>
+              <span class="meter rank-meter"><span style="width:100%"></span></span>
+              <span class="rank-val">10</span>
+            </li>
+            <li class="rank-row" style="--shift:6;--e:9">
+              <span class="rank-pos">2</span>
+              <span class="rank-name">Warehouse banger</span>
+              <span class="meter rank-meter"><span style="width:90%"></span></span>
+              <span class="rank-val">9</span>
+            </li>
+            <li class="rank-row" style="--shift:3;--e:7">
+              <span class="rank-pos">3</span>
+              <span class="rank-name">Rolling drums</span>
+              <span class="meter rank-meter"><span style="width:70%"></span></span>
+              <span class="rank-val">7</span>
+            </li>
+            <li class="rank-row" style="--shift:3;--e:6">
+              <span class="rank-pos">4</span>
+              <span class="rank-name">Tech house groove</span>
+              <span class="meter rank-meter"><span style="width:60%"></span></span>
+              <span class="rank-val">6</span>
+            </li>
+            <li class="rank-row" style="--shift:-1;--e:5">
+              <span class="rank-pos">5</span>
+              <span class="rank-name">Liquid stepper</span>
+              <span class="meter rank-meter"><span style="width:50%"></span></span>
+              <span class="rank-val">5</span>
+            </li>
+            <li class="rank-row" style="--shift:-4;--e:3">
+              <span class="rank-pos">6</span>
+              <span class="rank-name">Deep roller</span>
+              <span class="meter rank-meter"><span style="width:30%"></span></span>
+              <span class="rank-val">3</span>
+            </li>
+            <li class="rank-row" style="--shift:-4;--e:2">
+              <span class="rank-pos">7</span>
+              <span class="rank-name">Dubby breakdown</span>
+              <span class="meter rank-meter"><span style="width:20%"></span></span>
+              <span class="rank-val">2</span>
+            </li>
+            <li class="rank-row" style="--shift:-7;--e:1">
+              <span class="rank-pos">8</span>
+              <span class="rank-name">Ambient opener</span>
+              <span class="meter rank-meter"><span style="width:10%"></span></span>
+              <span class="rank-val">1</span>
+            </li>
+        </ol>
+      </div>
+
       <div class="grid">
         <div class="card">
           <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18V6M9 21V3M14 18V6M19 15V9"/></svg></div>

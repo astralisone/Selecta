@@ -11,13 +11,26 @@ name = "track2mix"
 pages_build_output_dir = "site"
 compatibility_date = "2026-09-30"
 
-# Central contacts database, shared by every app. Create it once with
-#   wrangler d1 create contacts
-# then paste the returned database_id below.
-[[d1_databases]]
-binding = "CONTACTS_DB"
-database_name = "contacts"
-database_id = "PASTE_DATABASE_ID_FROM_WRANGLER_D1_CREATE"
+# Central contacts database, shared by every app.
+#
+# Commented out on purpose: Cloudflare validates database_id as a UUID, so a
+# placeholder here fails the whole deploy and nothing goes live — including the
+# static site, which does not need the database at all. The site therefore ships
+# first and the binding is added second.
+#
+# To turn the download form on:
+#   1. wrangler d1 create contacts
+#   2. uncomment the block below and paste in the returned database_id
+#   3. wrangler d1 execute contacts --remote --file=./migrations/0001_contacts.sql
+#
+# Until then /api/contact answers 500 and names CONTACTS_DB as the missing
+# binding, which is deliberate — it never pretends to have saved a contact.
+# Full walkthrough in docs/CONTACTS.md.
+#
+# [[d1_databases]]
+# binding = "CONTACTS_DB"
+# database_name = "contacts"
+# database_id = "<paste the id from wrangler d1 create>"
 
 [vars]
 # Which app a contact_events row is attributed to. Every app writing to the
