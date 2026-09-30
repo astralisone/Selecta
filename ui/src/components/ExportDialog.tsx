@@ -14,7 +14,7 @@ type Props = {
 };
 
 export function ExportDialog({ open, onOpenChange, selectedIds, defaultName }: Props) {
-  const [name, setName] = React.useState(defaultName ?? "Selecta mix");
+  const [name, setName] = React.useState(defaultName ?? "Track2Mix set");
   const [path, setPath] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
@@ -22,7 +22,7 @@ export function ExportDialog({ open, onOpenChange, selectedIds, defaultName }: P
 
   React.useEffect(() => {
     if (open) {
-      setName(defaultName ?? "Selecta mix");
+      setName(defaultName ?? "Track2Mix set");
       setErr(null);
       setOk(null);
     }

@@ -2,7 +2,7 @@
 members = [".", "src-tauri"]
 
 [package]
-name = "rekordbox-analyzer"
+name = "track2mix"
 version = "0.1.0"
 edition = "2021"
 
@@ -32,11 +32,11 @@ anyhow = "1"
 urlencoding = "2"
 
 [lib]
-name = "rekordbox_analyzer"
+name = "track2mix_core"
 path = "src/lib.rs"
 
 [[bin]]
-name = "rekordbox-analyzer"
+name = "track2mix"
 path = "src/main.rs"
 
 [profile.release]

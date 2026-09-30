@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  rust:
+    name: Rust
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: swatinem/rust-cache@v2
+
+      # src-tauri needs system GTK/WebKit to build on Linux; the analyzer crate
+      # does not. CI checks the analyzer, which is where the logic lives. The
+      # GUI is compiled on macOS and Windows by the release workflow.
+      - name: Build
+        run: cargo check --package track2mix --all-targets
+
+      - name: Test
+        run: cargo test --package track2mix --all-targets
+
+      # Advisory, not blocking: the codebase is not currently rustfmt-clean and
+      # carries a handful of clippy lints. These steps surface them without
+      # failing the build. Once `cargo fmt` has been run across the tree and the
+      # lints are cleared, drop continue-on-error and add `-D warnings` to make
+      # them enforcing.
+      - name: Format (advisory)
+        continue-on-error: true
+        run: cargo fmt --package track2mix -- --check
+
+      - name: Clippy (advisory)
+        continue-on-error: true
+        run: cargo clippy --package track2mix --all-targets
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Typecheck and build
+        run: bun run build
+
+  site:
+    name: Site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check site JavaScript parses
+        run: node --check site/main.js
+
+      - name: Test the contact endpoint
+        run: node functions/api/contact.test.mjs
+      - name: Check a payment method is configured
+        # The tip jar renders disabled (and says so) until at least one handle
+        # is set in site/main.js. Flag it here so a deploy with no payment
+        # method doesn't go unnoticed. Advisory until the handles exist.
+        continue-on-error: true
+        run: |
+          if grep -qE '^  (paypalMe|koFi|githubSponsors): "[^"]+",' site/main.js; then
+            echo "At least one payment method is configured."
+          else
+            echo "::warning file=site/main.js::No payment method set in PAYMENTS — the tip jar will render disabled."
+          fi

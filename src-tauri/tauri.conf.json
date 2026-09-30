@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Selecta",
+  "productName": "Track2Mix",
   "version": "0.1.0",
-  "identifier": "com.selecta.libtool",
+  "identifier": "com.track2mix.desktop",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Selecta",
+        "title": "Track2Mix",
         "width": 1400,
         "height": 900,
         "minWidth": 900,

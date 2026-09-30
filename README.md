@@ -1,11 +1,23 @@
-# Selecta
+# Track2Mix
 
-DJ library intelligence for Rekordbox. A Rust CLI that analyses your tracks plus a Tauri/React GUI for exploring and exporting playlists.
+**Which of your tracks actually mixes with this one?**
+
+DJ library intelligence for Rekordbox. Track2Mix reads your collection export,
+decodes every track on your own machine, scores it for energy, and then — given
+any anchor track — hands you the harmonically and rhythmically compatible
+shortlist, ranked. Export it as an M3U8 and Rekordbox imports it directly.
+
+Runs entirely offline. No account, no upload, no server.
+
+- 🌐 **Site:** `site/` — static landing page, see [site/README.md](site/README.md)
+- 📈 **Go-to-market:** [GO-TO-MARKET.md](GO-TO-MARKET.md)
+- 💾 **Install:** [docs/INSTALL.md](docs/INSTALL.md)
+- 🔑 **Signing a release:** [docs/CODE-SIGNING.md](docs/CODE-SIGNING.md)
 
 ## Two ways in
 
-- **CLI** (`rekordbox-analyzer`) — run the audio analysis pipeline, query the resulting DB, export M3U8 playlists from the shell.
-- **GUI** (`selecta-gui` via Tauri) — search and filter the analysed library, click a track to get harmonically / BPM-compatible suggestions, tick the ones you want, and export an M3U8 that Rekordbox can import directly.
+- **CLI** (`track2mix`) — run the audio analysis pipeline, query the resulting DB, export M3U8 playlists from the shell.
+- **GUI** (`track2mix-tauri`) — search and filter the analysed library, click a track to get harmonically / BPM-compatible suggestions, tick the ones you want, and export an M3U8 that Rekordbox can import directly.
 
 Run the GUI in development:
 ```
@@ -14,6 +26,8 @@ bun tauri dev
 ```
 
 The GUI auto-opens `./library.db` from the project root if it exists; otherwise click **Open DB** in the title bar.
+
+A release build installs the CLI as `track2mix`; the examples below use `cargo run` so they work from a checkout.
 
 ## What this proves (or disproves)
 
