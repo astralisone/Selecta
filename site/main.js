@@ -208,3 +208,61 @@ if (PAYMENTS.paypalMe) {
       "(see site/README.md)."
   );
 }
+
+/* ------------------------------------------------------- animated figures */
+
+/**
+ * Figures render in their finished state by default; the animations in
+ * styles.css only apply once `.in-view` is set here. So a visitor with JS
+ * disabled, a thumbnail grab, or a reduced-motion preference all get the
+ * completed picture rather than something frozen mid-flight.
+ */
+const prefersReducedMotion = window.matchMedia(
+  "(prefers-reduced-motion: reduce)"
+).matches;
+
+const figures = document.querySelectorAll("[data-animate]");
+
+if (!prefersReducedMotion && "IntersectionObserver" in window) {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        if (entry.target.dataset.animate === "ranking") {
+          playRanking();
+        } else {
+          entry.target.classList.add("in-view");
+        }
+        // One play per figure; the replay button is the way to see it again.
+        observer.unobserve(entry.target);
+      }
+    },
+    { threshold: 0.35, rootMargin: "0px 0px -8% 0px" }
+  );
+
+  for (const figure of figures) observer.observe(figure);
+}
+
+/**
+ * Replay the ranking sort. The rows are parked at their alphabetical offsets,
+ * a reflow commits that position without transitioning to it, and removing the
+ * class lets them travel back to the order the DOM already holds.
+ */
+const ranking = document.querySelector('[data-animate="ranking"]');
+const replayButton = document.querySelector(".rank-replay");
+
+function playRanking() {
+  if (!ranking || prefersReducedMotion) return;
+  ranking.classList.add("rank-from");
+  void ranking.offsetWidth; // commit the start state before transitioning away
+  ranking.classList.remove("rank-from");
+}
+
+if (replayButton) {
+  if (prefersReducedMotion) {
+    // Nothing to replay when motion is off — don't offer a button that no-ops.
+    replayButton.remove();
+  } else {
+    replayButton.addEventListener("click", playRanking);
+  }
+}
