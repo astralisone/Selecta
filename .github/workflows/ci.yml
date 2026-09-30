@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust:
+    name: Rust
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo artifacts
+        uses: Swatinem/rust-cache@v2
+
+      # Every step is scoped to the `rekordbox-analyzer` package. The other
+      # workspace member, `selecta-tauri` under src-tauri/, is skipped
+      # deliberately: it links against GTK/WebKit system libraries that aren't
+      # available on the Linux runner.
+      - name: Format
+        run: cargo fmt --package rekordbox-analyzer -- --check
+
+      - name: Clippy
+        run: cargo clippy --package rekordbox-analyzer --all-targets -- -D warnings
+
+      - name: Test
+        run: cargo test --package rekordbox-analyzer --all-targets
