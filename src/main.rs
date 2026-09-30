@@ -335,6 +335,9 @@ fn analyze_one(track: &rekordbox::Track, path: &Path, store: &Mutex<Store>) -> R
     Ok(())
 }
 
+// Parameters mirror the `Command::Top` clap variant 1:1; grouping them into a
+// separate struct would just duplicate that enum's fields.
+#[allow(clippy::too_many_arguments)]
 fn cmd_top(
     db: &Path,
     metric: &str,
@@ -370,6 +373,9 @@ fn cmd_top(
     Ok(())
 }
 
+// Parameters mirror the `Command::Compat` clap variant 1:1; grouping them into a
+// separate struct would just duplicate that enum's fields.
+#[allow(clippy::too_many_arguments)]
 fn cmd_compat(
     db: &Path,
     query: &str,
