@@ -1,0 +1,32 @@
+# Cloudflare Pages configuration for the Track2Mix marketing site.
+#
+# The site itself is static (site/). The one server-side piece is
+# functions/api/contact.js, which captures a contact into the central D1
+# database and subscribes them to the mailing list. Secrets never reach the
+# browser because they live here, not in site/main.js.
+#
+# Setup is documented in docs/CONTACTS.md.
+
+name = "track2mix"
+pages_build_output_dir = "site"
+compatibility_date = "2026-09-30"
+
+# Central contacts database, shared by every app. Create it once with
+#   wrangler d1 create contacts
+# then paste the returned database_id below.
+[[d1_databases]]
+binding = "CONTACTS_DB"
+database_name = "contacts"
+database_id = "PASTE_DATABASE_ID_FROM_WRANGLER_D1_CREATE"
+
+[vars]
+# Which app a contact_events row is attributed to. Every app writing to the
+# shared database sets its own value here.
+APP_NAME = "track2mix"
+# Where the download link points. Returned by the API after a successful
+# capture, so it is not present in the page source beforehand.
+DOWNLOAD_URL = "https://github.com/astralisone/Selecta/releases/latest"
+
+# Secrets are NOT set here — they would end up in git. Set them with:
+#   wrangler pages secret put LIST_ENDPOINT
+#   wrangler pages secret put LIST_AUTH_HEADER

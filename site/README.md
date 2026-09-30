@@ -32,57 +32,48 @@ python3 -m http.server 8000 --directory site
 Netlify, Vercel and GitHub Pages all work the same way — the only setting that
 matters is that the publish directory is `site`.
 
-## Wire up email capture (required before launch)
+## Wire up the download gate (required before launch)
 
-`main.js` ships with `SIGNUP_ENDPOINT = ""`. Until you set it, the form tells the
-visitor that signup is unconfigured and logs the reason to the console — it does
-not fake a success. Set it to one of these:
+The download is gated: name and email are mandatory, and the link is returned
+by the server only after the contact is saved. Nothing to configure in this
+directory — the form posts to `/api/contact`, a Cloudflare Pages Function in
+`functions/api/`, which writes to the shared D1 contacts database and
+subscribes the person to your mailing list.
 
-| Provider | Free tier | Endpoint to paste |
-| --- | --- | --- |
-| Buttondown | 100 subscribers | `https://buttondown.com/api/emails/embed-subscribe/<your-username>` |
-| MailerLite | 1,000 subscribers | Embedded-form action URL from the form's HTML snippet |
-| Formspree | 50 submissions/month | `https://formspree.io/f/<your-form-id>` |
+Full setup (create the database, apply the schema, set the list secrets, bind
+it to the Pages project) is in **[docs/CONTACTS.md](../docs/CONTACTS.md)**.
 
-Buttondown and Formspree both expect the field name `email`, which is
-`EMAIL_FIELD`'s default. MailerLite expects `fields[email]` — change
-`EMAIL_FIELD` to match if you use it.
+Until the binding exists, submitting the form returns a 500 that names the
+missing variable. It does not fake a success, and it does not hand out the
+download.
 
-## Wire up the tip jar (required before launch)
+### One thing the gate cannot do
 
-`main.js` ships with `TIP_BASE_URL = ""`. Until you set it, the three tier
-buttons render disabled with a visible note and the console says why — they
-never link nowhere. The download stays free and working regardless.
+GitHub Releases is public. Anyone who goes to the repository directly can
+download the build without ever seeing the form, and the site links to the
+source on purpose. So treat this as a soft gate that captures the large
+majority who arrive via the site, not as access control. Hardening it properly
+would mean serving the binary from R2 behind a signed, expiring URL that
+`/api/contact` issues — worth doing only if the leakage turns out to matter.
 
-| Provider | Platform fee | Notes |
-| --- | --- | --- |
-| **Ko-fi** | 0% on one-off tips | Recommended. Payment-processor fees only, no monthly cost, supports a suggested amount via `?amount=`. |
-| Buy Me a Coffee | 5% | Slicker page, but you pay for it out of every tip. |
-| GitHub Sponsors | 0% | Great fit for an open-source repo, but needs approval and skews developer rather than DJ. |
-| Stripe Payment Link | 2.9% + 30¢ | Most professional and unbranded; needs a Stripe account and business details. |
+## Wire up payments
 
-`tipUrlFor()` appends `?amount=<n>`. Ko-fi, Buy Me a Coffee and Stripe
-customer-chosen-amount links all accept that; if you switch to a provider that
-names the parameter differently, that one function is the only thing to change.
+Set at least one handle in `PAYMENTS` at the top of `main.js`:
+`paypalMe`, `koFi`, `githubSponsors`. Each link renders only when configured,
+and with none set the tip jar disables itself and says so.
 
-### Where the tip ask actually converts
-
-Not on the landing page. Put it where the value just landed:
-
-1. **After a successful analysis run, inside the app.** The moment a DJ sees
-   their library scored is the moment the tool has proven itself. This is by far
-   the highest-converting placement and it costs nothing.
-2. **On the post-download thank-you page.** Second best.
-3. **In the release notes of each new version.** People who update are people
-   who use it.
-
-The landing-page tier block exists to set the expectation that paying is normal.
-It is not where the money comes from.
+PayPal is the only one that accepts a prefilled amount, so the tier buttons
+deep-link to it — and note it takes the amount as a **path segment**
+(`paypal.me/you/15USD`), not `?amount=`. Comparison table and the reasoning are
+in [docs/CONTACTS.md](../docs/CONTACTS.md#payments).
 
 ## Before you launch
 
-- [ ] Set `SIGNUP_ENDPOINT` in `main.js` and submit the form once to confirm the
-      address actually lands in your list.
+- [ ] Create the D1 database, apply the schema and bind it, then submit the
+      form once and confirm the row lands in `contacts` and the person lands in
+      your mailing list. See [docs/CONTACTS.md](../docs/CONTACTS.md).
+- [ ] Set at least one handle in `PAYMENTS` and click a tier to confirm it opens
+      prefilled at the right amount.
 - [ ] Replace the hero preview with **real screenshots** of the app running on
       your own library. The markup in `index.html` under
       `<!-- Accurate rendering of the Track2Mix track view -->` is an honest
@@ -92,8 +83,8 @@ It is not where the money comes from.
       track is the single most persuasive image you can put here.
 - [ ] Add `assets/og.png` at 1200×630 for link previews — `index.html` already
       references it. Without it, shared links render without an image.
-- [ ] Point the download button at a real release. Right now `#get` collects
-      emails; once GitHub Releases has a signed build, link it directly.
+- [ ] Point `DOWNLOAD_URL` in `wrangler.toml` at a real release once GitHub
+      Releases has a signed build.
 - [ ] Update the GitHub URLs if the repo moves — they appear in `index.html`
       in the nav-adjacent CTA (`#gh-link`) and the footer.
 - [ ] Turn on **Cloudflare Web Analytics** (free, no cookie banner needed) so

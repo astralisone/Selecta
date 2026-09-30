@@ -45,6 +45,13 @@
   box-sizing: border-box;
 }
 
+/* Any element given an explicit display overrides the UA's
+   [hidden] { display: none }, so restate it with priority. Without this,
+   .download-ready { display: grid } renders while still marked hidden. */
+[hidden] {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
@@ -922,4 +929,92 @@ footer {
 /* Download and tip cards sit side by side — match their heights. */
 #get .two-col {
   align-items: stretch;
+}
+
+/* ---------- gated download form ---------- */
+
+.stack-form {
+  display: grid;
+  gap: 14px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--fg-muted);
+  letter-spacing: -0.005em;
+}
+
+.field input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--hairline);
+  background: rgba(0, 1, 10, 0.6);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+}
+
+.field input::placeholder {
+  color: var(--fg-faint);
+}
+
+.field input:focus {
+  border-color: rgba(87, 90, 208, 0.6);
+}
+
+.stack-form .btn {
+  width: 100%;
+  margin-top: 2px;
+}
+
+.download-ready {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  margin-top: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(245, 183, 28, 0.35);
+  background: rgba(245, 183, 28, 0.07);
+}
+
+.download-ready-head {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--gold-200);
+}
+
+/* ---------- alternative payment methods ---------- */
+
+.alt-pay {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-top: 14px;
+  font-size: 0.875rem;
+}
+
+.alt-pay-label {
+  color: var(--fg-faint);
+}
+
+.alt-pay-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--iris-300);
+}
+
+.alt-pay-link:hover {
+  color: var(--iris-200);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }

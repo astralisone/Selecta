@@ -314,40 +314,47 @@ track2mix compat <span class="p">"the track you're opening with"</span> <span cl
           <h3 style="font-size:1.25rem;margin-bottom:10px">Get the build</h3>
           <p style="color:var(--fg-muted);font-size:0.9375rem;margin-bottom:20px">
             macOS 11+ (Apple Silicon &amp; Intel) and Windows 10+. Requires
-            Rekordbox 6 or 7 for the collection export. No account needed.
+            Rekordbox 6 or 7 for the collection export. Tell me who you are and
+            the download link appears right here, and lands in your inbox.
           </p>
 
-          <div class="hero-actions" style="margin-top:0">
-            <a class="btn btn-primary" id="dl-link" href="https://github.com/astralisone/Selecta/releases/latest">
+          <form id="signup-form" novalidate class="stack-form">
+            <div class="field">
+              <label for="name">Your name</label>
+              <input id="name" name="name" type="text" autocomplete="name" placeholder="Alex" required>
+            </div>
+            <div class="field">
+              <label for="email">Email address</label>
+              <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required>
+            </div>
+            <button class="btn btn-primary" type="submit" id="signup-submit">
               <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-              Download free
-            </a>
-            <a class="btn btn-ghost" href="https://github.com/astralisone/Selecta">
-              <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M12 2A10 10 0 0 0 8.84 21.5c.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.64-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.6 9.6 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.69.92.69 1.85V21c0 .27.16.59.67.5A10 10 0 0 0 12 2Z"/></svg>
-              Source
+              Get the download link
+            </button>
+          </form>
+          <p class="form-msg" id="form-msg" role="status" aria-live="polite"></p>
+
+          <div id="download-ready" class="download-ready" hidden>
+            <p class="download-ready-head">Here it is — also on its way to your inbox.</p>
+            <a class="btn btn-primary" id="dl-link" href="#get" rel="noopener">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+              Download Track2Mix
             </a>
           </div>
 
-          <hr class="rule" style="margin-block:24px">
-
-          <h3 style="font-size:1rem;margin-bottom:8px">Or get it by email</h3>
-          <p style="color:var(--fg-muted);font-size:0.9375rem">
-            I'll send the download link plus a note when the next version lands.
-            Nothing else, one click to leave.
+          <p class="fineprint" style="margin-top:16px;text-align:left">
+            I'll email you the link and a note when a new version lands. Nothing
+            else, never passed on, one click to leave. Track2Mix itself still
+            runs entirely offline once installed.
           </p>
-          <form class="form" id="signup-form" novalidate style="margin-top:16px;max-width:none">
-            <label for="email" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Email address</label>
-            <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required>
-            <button class="btn btn-primary" type="submit" id="signup-submit">Send it</button>
-          </form>
-          <p class="form-msg" id="form-msg" role="status" aria-live="polite"></p>
         </div>
 
         <div class="glass" style="padding:clamp(24px,3.5vw,36px)">
           <h3 style="font-size:1.25rem;margin-bottom:10px">Tip jar</h3>
           <p style="color:var(--fg-muted);font-size:0.9375rem;margin-bottom:20px">
             Track2Mix has no investors and no ads. Tips are what decide whether
-            Serato support, key detection and set-arc planning get built.
+            Serato support, key detection and set-arc planning get built. Pay by
+            PayPal in two taps — no account needed on my side, none created on yours.
           </p>
 
           <div class="tiers" id="tip-tiers">
@@ -365,6 +372,18 @@ track2mix compat <span class="p">"the track you're opening with"</span> <span cl
             </a>
           </div>
           <p class="form-msg" id="tip-msg" role="status" aria-live="polite"></p>
+
+          <div class="alt-pay" id="alt-payments">
+            <span class="alt-pay-label">Or</span>
+            <a class="alt-pay-link" id="pay-kofi" href="#get">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z"/><path d="M6 2v2M10 2v2M14 2v2"/></svg>
+              card or Apple Pay
+            </a>
+            <a class="alt-pay-link" id="pay-sponsors" href="#get">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+              monthly
+            </a>
+          </div>
 
           <p style="margin-top:18px;padding-top:18px;border-top:1px solid var(--hairline-soft);color:var(--fg-muted);font-size:0.9375rem">
             <b style="color:var(--fg)">Can't afford it right now?</b> Then don't pay.
@@ -404,7 +423,7 @@ track2mix compat <span class="p">"the track you're opening with"</span> <span cl
         </details>
         <details>
           <summary>Is it really free? What's the catch?</summary>
-          <p>No catch. Track2Mix is pay-what-you-want: the full app downloads free with nothing held back, and you tip only if it earns it. I'd rather have a hundred DJs telling me whether the energy scores match their ears than ten early sales. If you genuinely can't afford to pay, use it free — that's the intended path, not an exploit.</p>
+          <p>No catch on the money. Track2Mix is pay-what-you-want: the full app downloads free with nothing held back, and you tip only if it earns it. If you genuinely can't afford to pay, use it free — that's the intended path, not an exploit. The one thing I do ask for is your name and email before the download, because during beta I need to be able to tell you when something is fixed or broken. That's the whole reason, and the list is used for nothing else.</p>
         </details>
         <details>
           <summary>Why pay-what-you-want instead of a price?</summary>
@@ -412,7 +431,7 @@ track2mix compat <span class="p">"the track you're opening with"</span> <span cl
         </details>
         <details>
           <summary>Does my music or data get uploaded anywhere?</summary>
-          <p>No. There is no backend. Analysis runs locally, results are stored locally, and the app makes no network calls to run. The only thing that ever reaches me is an email address, if you choose to give one.</p>
+          <p>No. There is no backend. Analysis runs locally, results are stored locally, and the app makes no network calls to run. The only things that reach me are the name and email you enter to get the download — they go to my mailing list and nowhere else, and you can leave in one click. Your library, your tracks and your analysis results never leave your machine.</p>
         </details>
       </div>
     </div>

@@ -84,6 +84,8 @@ actually cost money here.
 | Tip jar (Ko-fi) | $0 | 0% platform fee on one-off tips. |
 | Analytics (Cloudflare Web Analytics) | $0 | No cookie banner needed. |
 | Binary hosting (GitHub Releases) | $0 | Versioned, fast, free. |
+| Contacts store (Cloudflare D1) | $0 | Free tier covers far more than you'll need; same platform as the site. |
+| Payments (PayPal.me + Ko-fi) | $0 upfront | PayPal's standard fees per transaction, 0% platform fee on Ko-fi. |
 | **Total** | **~$110** | $10 over. Resolve it one of the two ways below. |
 
 ### The $10 problem, and how to resolve it
@@ -293,12 +295,37 @@ Without numbers you're guessing about which channel works.
 | Stage | Metric | Rough target to beat |
 | --- | --- | --- |
 | Site | Unique visitors by referrer | — |
-| Site | Visitor → download | 5–10% |
-| Site | Visitor → email signup | 2–5% |
+| Site | Visitor → form submitted | 2–5% |
+| Site | Form started → form completed | 60%+ |
 | Product | Downloaded → completed an analysis run | **the one that matters most** |
 | Product | Ran once → ran again within 2 weeks | 30%+ means it's useful |
 | Money | Downloads → tipped | 1–3% is normal for PWYW |
 | Money | Average tip | $8–15 typical |
+
+### What the mandatory name-and-email gate costs you
+
+Requiring contact details before the download is a real trade, and it's worth
+being clear-eyed about both sides.
+
+**What it costs.** Gating a free download typically cuts completion
+substantially versus a direct link — the drop is large enough that you should
+expect roughly half the downloads you'd otherwise get, and possibly fewer from
+the privacy-minded technical DJs who are otherwise your best early users. That
+group is also the most likely to notice the irony of handing over their details
+to a tool whose pitch is "nothing leaves your machine", which is why the FAQ
+now says plainly what is collected and why.
+
+**What it buys.** A list you own, which is the only asset that survives a
+channel drying up, and the ability to actually tell beta users when something
+is fixed. Given you're not charging, the list *is* the return on this launch.
+
+**What it can't do.** GitHub Releases is public, and the site links to the
+source deliberately. Anyone can route around the form. Treat it as capturing
+the majority who arrive through the site, not as access control — and don't be
+alarmed when download counts exceed contact rows.
+
+If completion looks bad after the first real traffic, the cheapest fix is
+dropping the name field and keeping email only. Measure before deciding.
 
 Set expectations honestly on that last pair: **pay-what-you-want with a genuine
 free option converts in the low single digits.** A hundred downloads might mean

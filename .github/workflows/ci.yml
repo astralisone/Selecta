@@ -60,18 +60,17 @@ jobs:
           node-version: "22"
       - name: Check site JavaScript parses
         run: node --check site/main.js
-      - name: Check the configuration constants are set
-        # The site ships with SIGNUP_ENDPOINT and TIP_BASE_URL empty. Both fail
-        # loudly in the browser rather than silently, but a deployed site with
-        # either unset is a broken funnel, so flag it here. Advisory until the
-        # providers are chosen.
+
+      - name: Test the contact endpoint
+        run: node functions/api/contact.test.mjs
+      - name: Check a payment method is configured
+        # The tip jar renders disabled (and says so) until at least one handle
+        # is set in site/main.js. Flag it here so a deploy with no payment
+        # method doesn't go unnoticed. Advisory until the handles exist.
         continue-on-error: true
         run: |
-          set -e
-          for const in SIGNUP_ENDPOINT TIP_BASE_URL; do
-            if grep -qE "^const ${const} = \"\";" site/main.js; then
-              echo "::warning file=site/main.js::${const} is still empty — the site funnel is incomplete."
-            else
-              echo "${const} is configured."
-            fi
-          done
+          if grep -qE '^  (paypalMe|koFi|githubSponsors): "[^"]+",' site/main.js; then
+            echo "At least one payment method is configured."
+          else
+            echo "::warning file=site/main.js::No payment method set in PAYMENTS — the tip jar will render disabled."
+          fi
