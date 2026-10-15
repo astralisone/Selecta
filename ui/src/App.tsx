@@ -1,12 +1,13 @@
 import * as React from "react";
 import {
-  analyzeXml,
+  analyzeLibrary,
   defaultDbPath,
   onAnalyzeProgress,
   openLibrary,
   type AnalyzeSummary,
   type LibrarySummary,
   type ProgressEvent,
+  type SourceKind,
   type UiTrack,
 } from "@/lib/tauri";
 import { open as openFile } from "@tauri-apps/plugin-dialog";
@@ -14,6 +15,7 @@ import { FilterBar, emptyFilters, type FilterState } from "./components/FilterBa
 import { TrackTable, type SortKey } from "./components/TrackTable";
 import { CompatPanel } from "./components/CompatPanel";
 import { ExportDialog } from "./components/ExportDialog";
+import { ImportMenu, type ImportChoice } from "./components/ImportMenu";
 import { Button } from "./components/ui/Button";
 import { Badge } from "./components/ui/Badge";
 import {
@@ -41,6 +43,7 @@ function App() {
   const [showExport, setShowExport] = React.useState(false);
 
   const [analyzing, setAnalyzing] = React.useState(false);
+  const [importKind, setImportKind] = React.useState<SourceKind>("rekordbox");
   const [progress, setProgress] = React.useState<ProgressEvent | null>(null);
   const [analyzeErr, setAnalyzeErr] = React.useState<string | null>(null);
   const [analyzeFailures, setAnalyzeFailures] = React.useState<
@@ -122,29 +125,23 @@ function App() {
     }
   }
 
-  async function pickXml() {
+  async function runImport({ kind, path }: ImportChoice) {
     setAnalyzeErr(null);
-    const picked = await openFile({
-      filters: [{ name: "Rekordbox XML", extensions: ["xml"] }],
-    }).catch((e) => {
-      setAnalyzeErr(String(e));
-      return null;
-    });
-    if (typeof picked !== "string") return;
+    // Everything imports into the open library. Tracks are matched by file
+    // path, so the same file arriving from Rekordbox, Traktor, Serato and a
+    // folder scan stays one row.
+    const finalDb = dbPath || `${path.replace(/[\\/]+$/, "")}.db`;
 
-    // Target DB next to the XML (same dir, swap .xml → .db).
-    // Falls back to the current dbPath if we can't derive one.
-    const targetDb = picked.replace(/\.xml$/i, ".db");
-    const finalDb = targetDb === picked ? dbPath || `${picked}.db` : targetDb;
-
+    setImportKind(kind);
     setAnalyzing(true);
     setProgress(null);
     setAnalyzeFailures([]);
     setAnalyzeSummary(null);
 
     try {
-      const summary = await analyzeXml({
-        xml_path: picked,
+      const summary = await analyzeLibrary({
+        source_kind: kind,
+        source_path: path,
         db_path: finalDb,
         skip_analyzed: skipAnalyzed,
       });
@@ -287,7 +284,7 @@ function App() {
         <div className="no-drag flex items-center gap-2">
           <label
             className="flex items-center gap-1.5 text-[11px] text-muted-foreground select-none cursor-pointer pr-1"
-            title="When importing XML, skip tracks that are already in the database"
+            title="When importing, skip tracks that are already in the database"
           >
             <input
               type="checkbox"
@@ -298,15 +295,11 @@ function App() {
             />
             skip analyzed
           </label>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={pickXml}
+          <ImportMenu
+            onPick={runImport}
+            onError={setAnalyzeErr}
             disabled={analyzing}
-          >
-            <FileUp className="h-3.5 w-3.5" />
-            Import Rekordbox XML
-          </Button>
+          />
           <Button
             variant="ghost"
             size="sm"
@@ -357,15 +350,17 @@ function App() {
                     No library loaded
                   </div>
                   <div className="text-xs text-muted-foreground mb-4">
-                    In Rekordbox: <span className="text-foreground">File →
-                    Export Collection in xml format</span>, then point Track2Mix
-                    at the file.
+                    Import a Rekordbox XML, Traktor collection or Serato
+                    library — or scan a folder of music. Every track is
+                    decoded and scored on this machine.
                   </div>
                   <div className="flex items-center justify-center gap-2">
-                    <Button variant="primary" onClick={pickXml}>
-                      <FileUp className="h-3.5 w-3.5" />
-                      Import Rekordbox XML
-                    </Button>
+                    <ImportMenu
+                      onPick={runImport}
+                      onError={setAnalyzeErr}
+                      variant="primary"
+                      size="md"
+                    />
                     <Button variant="secondary" onClick={pickDb}>
                       <Database className="h-3.5 w-3.5" />
                       Open existing .db
@@ -430,7 +425,7 @@ function App() {
                   onClick={() => setShowExport(true)}
                 >
                   <Download className="h-3.5 w-3.5" />
-                  Export to Rekordbox
+                  Export playlist
                 </Button>
               </div>
             </div>
@@ -456,6 +451,7 @@ function App() {
 
       {analyzing && (
         <AnalyzeOverlay
+          kind={importKind}
           progress={progress}
           failures={analyzeFailures}
           err={analyzeErr}
@@ -473,6 +469,7 @@ function App() {
                 {analyzeSummary.ok} ok · {analyzeSummary.failed} failed ·{" "}
                 {analyzeSummary.elapsed_secs.toFixed(1)}s
               </div>
+              <DroppedNote dropped={analyzeSummary.dropped} />
             </div>
             <Button
               variant="ghost"
@@ -492,7 +489,7 @@ function App() {
         <div className="fixed bottom-4 right-4 z-40 glass rounded-lg p-4 border border-red-500/30 text-sm max-w-md">
           <div className="flex items-start justify-between gap-3 mb-1">
             <div className="font-medium text-red-200">
-              Couldn't analyze the XML
+              Couldn't import the library
             </div>
             <Button
               variant="ghost"
@@ -511,11 +508,47 @@ function App() {
   );
 }
 
+const SOURCE_LABEL: Record<SourceKind, string> = {
+  rekordbox: "Rekordbox XML",
+  traktor: "Traktor collection",
+  serato: "Serato library",
+  directory: "folder scan",
+};
+
+/** Tracks the import could not use, so nothing disappears silently. */
+function DroppedNote({ dropped }: { dropped: AnalyzeSummary["dropped"] }) {
+  const parts: string[] = [];
+  if (dropped.missing_file > 0) parts.push(`${dropped.missing_file} file(s) not on disk`);
+  if (dropped.no_location + dropped.unparseable_uri > 0)
+    parts.push(`${dropped.no_location + dropped.unparseable_uri} without a local file`);
+  if (dropped.duplicate > 0) parts.push(`${dropped.duplicate} duplicate(s)`);
+  if (dropped.scan_errors.length > 0)
+    parts.push(`${dropped.scan_errors.length} unreadable folder(s)`);
+  if (parts.length === 0) return null;
+  const examples = [...dropped.missing_examples.slice(0, 3), ...dropped.scan_errors.slice(0, 3)];
+  return (
+    <div className="mt-1 text-xs text-gold-300/90">
+      Skipped: {parts.join(" · ")}
+      {examples.length > 0 && (
+        <div className="mt-1 text-[11px] text-muted-foreground font-mono space-y-0.5">
+          {examples.map((e, i) => (
+            <div key={i} className="truncate" title={e}>
+              {e}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AnalyzeOverlay({
+  kind,
   progress,
   failures,
   err,
 }: {
+  kind: SourceKind;
   progress: ProgressEvent | null;
   failures: Array<{ name: string; error: string }>;
   err: string | null;
@@ -524,7 +557,9 @@ function AnalyzeOverlay({
     progress === null
       ? "Starting…"
       : progress.kind === "parsed"
-        ? `Parsed ${progress.total_in_xml.toLocaleString()} tracks from XML…`
+        ? progress.source === "directory"
+          ? `Found ${progress.total_in_source.toLocaleString()} audio files…`
+          : `Read ${progress.total_in_source.toLocaleString()} tracks from ${SOURCE_LABEL[progress.source]}…`
         : progress.kind === "resolved"
           ? `Resolved ${progress.ready.toLocaleString()} playable tracks${
               progress.already_analyzed > 0
@@ -557,7 +592,9 @@ function AnalyzeOverlay({
             <FileUp className="h-4 w-4 text-iris-300" />
           </div>
           <div>
-            <div className="text-sm font-medium">Importing library…</div>
+            <div className="text-sm font-medium">
+              {kind === "directory" ? "Scanning folder…" : `Importing ${SOURCE_LABEL[kind]}…`}
+            </div>
             <div className="text-xs text-muted-foreground">{phase}</div>
           </div>
         </div>

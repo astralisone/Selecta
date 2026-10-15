@@ -3,7 +3,8 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { save } from "@tauri-apps/plugin-dialog";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
-import { exportPlaylist } from "@/lib/tauri";
+import { exportPlaylist, type ExportFormat, type ExportReport } from "@/lib/tauri";
+import { cn } from "@/lib/utils";
 import { Download, FolderOpen } from "lucide-react";
 
 type Props = {
@@ -13,12 +14,70 @@ type Props = {
   defaultName?: string;
 };
 
+type FormatInfo = {
+  label: string;
+  extension: string;
+  filter: { name: string; extensions: string[] };
+  howTo: string;
+};
+
+// The backend picks the format from the file extension; this table only
+// drives the save dialog and the instructions shown.
+const FORMATS: Record<ExportFormat, FormatInfo> = {
+  m3u8: {
+    label: "Rekordbox",
+    extension: "m3u8",
+    filter: { name: "M3U8 playlist", extensions: ["m3u8", "m3u"] },
+    howTo: "Saves an M3U8. In Rekordbox: File → Import Playlist.",
+  },
+  traktor_nml: {
+    label: "Traktor",
+    extension: "nml",
+    filter: { name: "Traktor playlist", extensions: ["nml"] },
+    howTo:
+      "Saves an NML playlist carrying BPM and key. In Traktor: right-click Playlists → Import Playlist.",
+  },
+  serato_crate: {
+    label: "Serato",
+    extension: "crate",
+    filter: { name: "Serato crate", extensions: ["crate"] },
+    howTo:
+      "Saves a crate. Put it in your _Serato_/Subcrates folder (usually Music/_Serato_/Subcrates) and restart Serato. Only tracks on that folder's drive can be included.",
+  },
+};
+
+const FORMAT_KEY = "track2mix.exportFormat";
+
+function storedFormat(): ExportFormat {
+  const v = localStorage.getItem(FORMAT_KEY);
+  return v === "traktor_nml" || v === "serato_crate" || v === "m3u8" ? v : "m3u8";
+}
+
+function withExtension(path: string, ext: string): string {
+  return /\.[^./\\]+$/.test(path) ? path.replace(/\.[^./\\]+$/, `.${ext}`) : `${path}.${ext}`;
+}
+
+function describe(report: ExportReport, path: string): string {
+  const parts = [`Wrote ${report.written} track(s) to ${path}.`];
+  if (report.skipped_no_path > 0) {
+    parts.push(`Skipped ${report.skipped_no_path} with no local file.`);
+  }
+  if (report.skipped_other_volume > 0) {
+    parts.push(
+      `Skipped ${report.skipped_other_volume} on a different drive than the crate (e.g. ${report.other_volume_examples[0]}).`,
+    );
+  }
+  return parts.join(" ");
+}
+
 export function ExportDialog({ open, onOpenChange, selectedIds, defaultName }: Props) {
   const [name, setName] = React.useState(defaultName ?? "Track2Mix set");
+  const [format, setFormat] = React.useState<ExportFormat>(storedFormat);
   const [path, setPath] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
   const [ok, setOk] = React.useState<string | null>(null);
+  const [warn, setWarn] = React.useState(false);
 
   React.useEffect(() => {
     if (open) {
@@ -28,11 +87,21 @@ export function ExportDialog({ open, onOpenChange, selectedIds, defaultName }: P
     }
   }, [open, defaultName]);
 
+  function chooseFormat(f: ExportFormat) {
+    setFormat(f);
+    localStorage.setItem(FORMAT_KEY, f);
+    if (path) setPath(withExtension(path, FORMATS[f].extension));
+    setErr(null);
+    setOk(null);
+  }
+
   async function pickPath() {
+    const info = FORMATS[format];
     try {
       const picked = await save({
-        defaultPath: path || `${name.replace(/[^a-z0-9\-_ ]/gi, "")}.m3u8`,
-        filters: [{ name: "M3U8 playlist", extensions: ["m3u8", "m3u"] }],
+        defaultPath:
+          path || `${name.replace(/[^a-z0-9\-_ ]/gi, "")}.${info.extension}`,
+        filters: [info.filter],
       });
       if (picked) setPath(picked);
     } catch (e) {
@@ -49,12 +118,13 @@ export function ExportDialog({ open, onOpenChange, selectedIds, defaultName }: P
     setErr(null);
     setOk(null);
     try {
-      const n = await exportPlaylist({
+      const report = await exportPlaylist({
         path,
         playlist_name: name,
         track_ids: selectedIds,
       });
-      setOk(`Wrote ${n} track(s) to ${path}`);
+      setOk(describe(report, path));
+      setWarn(report.skipped_no_path + report.skipped_other_volume > 0);
     } catch (e) {
       setErr(String(e));
     } finally {
@@ -71,14 +141,37 @@ export function ExportDialog({ open, onOpenChange, selectedIds, defaultName }: P
             Export playlist
           </Dialog.Title>
           <Dialog.Description className="text-xs text-muted-foreground mb-4">
-            {selectedIds.length} track{selectedIds.length === 1 ? "" : "s"} selected.
-            Save as M3U8, then in Rekordbox: File → Import Playlist.
+            {selectedIds.length} track{selectedIds.length === 1 ? "" : "s"} selected.{" "}
+            {FORMATS[format].howTo}
           </Dialog.Description>
 
           <div className="space-y-3">
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">
-                Playlist name
+                Export for
+              </label>
+              <div className="grid grid-cols-3 gap-1 rounded-md bg-white/[0.03] border border-white/10 p-1">
+                {(Object.keys(FORMATS) as ExportFormat[]).map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => chooseFormat(f)}
+                    className={cn(
+                      "h-7 rounded text-xs transition-colors",
+                      f === format
+                        ? "bg-iris-500/80 text-white"
+                        : "text-muted-foreground hover:text-foreground hover:bg-white/[0.05]",
+                    )}
+                    aria-pressed={f === format}
+                  >
+                    {FORMATS[f].label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">
+                {format === "serato_crate" ? "Crate name (from the file name)" : "Playlist name"}
               </label>
               <Input
                 value={name}
@@ -108,7 +201,14 @@ export function ExportDialog({ open, onOpenChange, selectedIds, defaultName }: P
               </div>
             )}
             {ok && (
-              <div className="text-xs text-iris-200 bg-iris-500/10 border border-iris-500/25 rounded-md p-2">
+              <div
+                className={cn(
+                  "text-xs rounded-md p-2 border",
+                  warn
+                    ? "text-gold-300 bg-gold-300/10 border-gold-300/25"
+                    : "text-iris-200 bg-iris-500/10 border-iris-500/25",
+                )}
+              >
                 {ok}
               </div>
             )}

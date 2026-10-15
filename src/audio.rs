@@ -4,12 +4,59 @@ use symphonia::core::audio::SampleBuffer;
 use symphonia::core::codecs::DecoderOptions;
 use symphonia::core::formats::FormatOptions;
 use symphonia::core::io::MediaSourceStream;
-use symphonia::core::meta::MetadataOptions;
+use symphonia::core::meta::{MetadataOptions, StandardTagKey, Tag};
 use symphonia::core::probe::Hint;
+
+use crate::library::FileTags;
 
 pub struct DecodedAudio {
     pub samples: Vec<f32>,
     pub sample_rate: u32,
+    /// Embedded tags (ID3, Vorbis comments, MP4 atoms, RIFF INFO).
+    pub tags: FileTags,
+}
+
+/// Copy recognised tags into `out`. Earlier tags win, so call this with the
+/// container-level metadata (e.g. an MP3's leading ID3v2) first.
+fn collect_tags(out: &mut FileTags, tags: &[Tag]) {
+    fn set(slot: &mut Option<String>, tag: &Tag) {
+        if slot.is_none() {
+            let v = tag.value.to_string();
+            // RIFF INFO strings keep their NUL terminator.
+            let v = v.trim_matches(|c: char| c.is_whitespace() || c == '\0');
+            if !v.is_empty() {
+                *slot = Some(v.to_string());
+            }
+        }
+    }
+    for tag in tags {
+        match tag.std_key {
+            Some(StandardTagKey::TrackTitle) => set(&mut out.title, tag),
+            Some(StandardTagKey::Artist) => set(&mut out.artist, tag),
+            Some(StandardTagKey::Genre) => set(&mut out.genre, tag),
+            Some(StandardTagKey::Label) => set(&mut out.label, tag),
+            Some(StandardTagKey::Bpm) => {
+                if out.bpm.is_none() {
+                    out.bpm = tag
+                        .value
+                        .to_string()
+                        .trim_matches(|c: char| c.is_whitespace() || c == '\0')
+                        .parse::<f32>()
+                        .ok()
+                        .filter(|b| *b > 0.0);
+                }
+            }
+            _ => {
+                // Symphonia has no standard key for musical key. ID3 uses
+                // TKEY, Vorbis comments INITIALKEY / KEY, MP4 a freeform
+                // `----:com.apple.iTunes:initialkey` atom.
+                let k = tag.key.to_ascii_lowercase();
+                if k == "tkey" || k == "key" || k.ends_with("initialkey") {
+                    set(&mut out.key, tag);
+                }
+            }
+        }
+    }
 }
 
 /// Decode a whole audio file to mono f32 PCM.
@@ -27,7 +74,7 @@ pub fn decode_mono(path: &Path, target_sr: u32) -> Result<DecodedAudio> {
         hint.with_extension(ext);
     }
 
-    let probed = symphonia::default::get_probe()
+    let mut probed = symphonia::default::get_probe()
         .format(
             &hint,
             mss,
@@ -36,7 +83,14 @@ pub fn decode_mono(path: &Path, target_sr: u32) -> Result<DecodedAudio> {
         )
         .context("probing audio format")?;
 
+    let mut tags = FileTags::default();
+    if let Some(rev) = probed.metadata.get().as_ref().and_then(|m| m.current()) {
+        collect_tags(&mut tags, rev.tags());
+    }
     let mut format = probed.format;
+    if let Some(rev) = format.metadata().current() {
+        collect_tags(&mut tags, rev.tags());
+    }
     let track = format
         .default_track()
         .ok_or_else(|| anyhow!("no default track"))?;
@@ -94,6 +148,7 @@ pub fn decode_mono(path: &Path, target_sr: u32) -> Result<DecodedAudio> {
     Ok(DecodedAudio {
         samples,
         sample_rate: target_sr,
+        tags,
     })
 }
 
