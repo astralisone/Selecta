@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag to build and publish (e.g. v0.1.0)"
+        description: "Release tag (e.g. v0.1.0); created at the chosen branch's head if it doesn't exist"
         required: true
 
 permissions:
@@ -36,9 +36,11 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
+      # Build the commit the run was started on: the tag for a tag push, or
+      # the chosen branch for a manual run. tauri-action creates the tag at
+      # this commit when it doesn't exist yet, so a release can be cut from
+      # the Actions tab without pushing a tag first.
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
 
       - uses: oven-sh/setup-bun@v2
         with:
