@@ -25,11 +25,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # A universal macOS app is built from both Apple targets; rustup
+          # has no "universal-apple-darwin" target to install.
           - platform: macos-latest
             target: universal-apple-darwin
+            rust_targets: aarch64-apple-darwin,x86_64-apple-darwin
             label: macOS (Universal)
           - platform: windows-latest
             target: x86_64-pc-windows-msvc
+            rust_targets: x86_64-pc-windows-msvc
             label: Windows (x64)
 
     name: ${{ matrix.label }}
@@ -48,7 +52,7 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
+          targets: ${{ matrix.rust_targets }}
 
       - uses: swatinem/rust-cache@v2
         with:
