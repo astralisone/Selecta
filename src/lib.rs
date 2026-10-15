@@ -3,5 +3,8 @@ pub mod audio;
 pub mod export;
 pub mod features;
 pub mod keys;
+pub mod library;
 pub mod rekordbox;
+pub mod serato;
 pub mod store;
+pub mod traktor;

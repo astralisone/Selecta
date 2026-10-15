@@ -2,10 +2,11 @@
 
 **Which of your tracks actually mixes with this one?**
 
-DJ library intelligence for Rekordbox. Track2Mix reads your collection export,
-decodes every track on your own machine, scores it for energy, and then — given
-any anchor track — hands you the harmonically and rhythmically compatible
-shortlist, ranked. Export it as an M3U8 and Rekordbox imports it directly.
+DJ library intelligence for Rekordbox, Traktor and Serato. Track2Mix reads your
+collection (or scans a folder of music), decodes every track on your own
+machine, scores it for energy, and then — given any anchor track — hands you the
+harmonically and rhythmically compatible shortlist, ranked. Export it as an
+M3U8 for Rekordbox, an NML playlist for Traktor, or a Serato crate.
 
 Runs entirely offline. No account, no upload, no server.
 
@@ -17,8 +18,8 @@ Runs entirely offline. No account, no upload, no server.
 
 ## Two ways in
 
-- **CLI** (`track2mix`) — run the audio analysis pipeline, query the resulting DB, export M3U8 playlists from the shell.
-- **GUI** (`track2mix-tauri`) — search and filter the analysed library, click a track to get harmonically / BPM-compatible suggestions, tick the ones you want, and export an M3U8 that Rekordbox can import directly.
+- **CLI** (`track2mix`) — import a library or scan a folder, query the resulting DB, export Rekordbox / Traktor / Serato playlists from the shell.
+- **GUI** (`track2mix-tauri`) — **Import / scan** a Rekordbox XML, Traktor collection, Serato library or crate, or any folder; search and filter the analysed library, click a track to get harmonically / BPM-compatible suggestions, tick the ones you want, and **Export playlist** for Rekordbox (M3U8), Traktor (NML) or Serato (crate). Imports go into the open database.
 
 Run the GUI in development:
 ```
@@ -54,6 +55,27 @@ cargo run --release -- analyze --xml ~/rekordbox.xml \
     --skip-analyzed
 ```
 
+### Other sources
+
+`analyze` takes exactly one source:
+
+| Flag | Source |
+| --- | --- |
+| `--xml rekordbox.xml` | Rekordbox: File → Export Collection in xml format |
+| `--nml collection.nml` | Traktor: the collection file (`~/Documents/Native Instruments/Traktor x.y/collection.nml`) or an exported `.nml` playlist |
+| `--serato ~/Music/_Serato_` | Serato: the `_Serato_` folder, its `database V2` file, or a single `.crate` |
+| `--dir ~/Music` | Any folder, scanned recursively. Title, artist, genre, BPM and key come from the files' tags, falling back to `Artist - Title.ext` file names |
+
+```bash
+cargo run --release -- analyze --dir ~/Music/DnB --skip-analyzed
+cargo run --release -- analyze --nml ~/Documents/Native\ Instruments/Traktor\ 3.11.1/collection.nml
+cargo run --release -- analyze --serato ~/Music/_Serato_
+```
+
+Sources can be mixed in one database. Tracks are matched by file path, so a
+file imported from Rekordbox and again from a folder scan stays one row (later
+imports refresh its metadata and features).
+
 Notes:
 - `--skip-analyzed` makes re-runs cheap — only newly-resolved tracks get decoded.
 - Tracks with paths like `/v4/catalog/tracks/...` are Beatport streaming entries, not local files; they are dropped and reported in the coverage summary.
@@ -76,6 +98,28 @@ cargo run --release -- stats
 
 Every subcommand accepts `--db /path/to/library.db` if you keep multiple libraries.
 
+### Exporting to Rekordbox, Traktor or Serato
+
+`top --export`, `compat --export` and the `export` subcommand pick the format
+from the file extension:
+
+| Extension | App | Import it with |
+| --- | --- | --- |
+| `.m3u8` | Rekordbox (and most others) | File → Import Playlist |
+| `.nml` | Traktor — carries BPM, key and genre | right-click Playlists → Import Playlist |
+| `.crate` | Serato — must be saved in `_Serato_/Subcrates` | restart Serato; the crate appears |
+
+```bash
+cargo run --release -- compat "circles around" --export ~/Desktop/circles.nml
+cargo run --release -- export ~/Music/_Serato_/Subcrates/Liquid.crate --sub-genre liquid
+cargo run --release -- export ~/Desktop/everything.m3u8
+```
+
+Serato crates can only hold files on the same drive as their `_Serato_` folder;
+tracks on other drives are skipped and listed. Traktor addresses boot-disk files
+by volume name, detected automatically on macOS — pass `--traktor-volume` if
+you export elsewhere for a Mac whose disk isn't called "Macintosh HD".
+
 Direct SQL still works if you want ad-hoc queries:
 
 ```bash
@@ -96,13 +140,13 @@ Run against 500 of your own tracks, then:
 
 - Linear resampling. Fine for MIR, not for audio playback. Swap `rubato` if you ever play back.
 - Onset detection is a simple flux-spike heuristic. For real use, port a proper algorithm (complex domain or superflux). Aubio has a well-tested one.
-- No key detection. We trust Rekordbox's analysis. If you want to verify or re-detect, that's a chromagram + key profile correlation — another 100 lines.
+- No key detection. We trust the key from your DJ app (or the file's tags for folder scans). If you want to verify or re-detect, that's a chromagram + key profile correlation — another 100 lines.
 - No embedding generation yet. Once features look good, the next step is composing a text profile per track (metadata + feature descriptors like "dense, bright, dynamic") and embedding it.
 - Energy weights are hand-tuned. For a real product, collect labels (users rating sets they built) and learn the weights.
 
 ## What comes next if this works
 
-1. Add a `--export` command that writes a Rekordbox-compatible XML playlist, proving the round-trip.
+1. Write a Rekordbox XML playlist (with cue points) in addition to M3U8, proving the round-trip.
 2. Add text embedding generation via the OpenAI or Voyage API, store vectors in a sibling `vectors` table using `sqlite-vec`.
 3. Build a tiny TUI that takes a natural-language prompt and returns a candidate playlist.
 4. Port to Tauri v2 as a sidecar binary or compile the analyzer as a library and call it from the Rust backend directly.

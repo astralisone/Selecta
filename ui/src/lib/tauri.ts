@@ -56,12 +56,27 @@ export type ExportArgs = {
   track_ids: string[];
 };
 
-export async function exportPlaylist(args: ExportArgs): Promise<number> {
-  return invoke<number>("export_playlist", { args });
+/** Chosen from the destination's extension: .m3u8 / .nml / .crate. */
+export type ExportFormat = "m3u8" | "traktor_nml" | "serato_crate";
+
+export type ExportReport = {
+  format: ExportFormat;
+  written: number;
+  skipped_no_path: number;
+  skipped_other_volume: number;
+  other_volume_examples: string[];
+};
+
+export async function exportPlaylist(args: ExportArgs): Promise<ExportReport> {
+  return invoke<ExportReport>("export_playlist", { args });
 }
 
+export type SourceKind = "rekordbox" | "traktor" | "serato" | "directory";
+
 export type AnalyzeArgs = {
-  xml_path: string;
+  source_kind: SourceKind;
+  /** XML / NML file, _Serato_ folder or .crate, or a folder to scan. */
+  source_path: string;
   db_path: string;
   limit?: number | null;
   skip_analyzed?: boolean;
@@ -77,6 +92,8 @@ export type AnalyzeSummary = {
     unparseable_uri: number;
     missing_file: number;
     missing_examples: string[];
+    duplicate: number;
+    scan_errors: string[];
   };
   elapsed_secs: number;
   total_considered: number;
@@ -84,7 +101,7 @@ export type AnalyzeSummary = {
 };
 
 export type ProgressEvent =
-  | { kind: "parsed"; total_in_xml: number }
+  | { kind: "parsed"; source: SourceKind; total_in_source: number }
   | {
       kind: "resolved";
       ready: number;
@@ -92,6 +109,8 @@ export type ProgressEvent =
       unparseable_uri: number;
       missing_file: number;
       missing_examples: string[];
+      duplicate: number;
+      scan_errors: string[];
       already_analyzed: number;
     }
   | {
@@ -103,8 +122,8 @@ export type ProgressEvent =
     }
   | { kind: "failed"; name: string; error: string };
 
-export async function analyzeXml(args: AnalyzeArgs): Promise<AnalyzeSummary> {
-  return invoke<AnalyzeSummary>("analyze_xml", { args });
+export async function analyzeLibrary(args: AnalyzeArgs): Promise<AnalyzeSummary> {
+  return invoke<AnalyzeSummary>("analyze_library", { args });
 }
 
 export async function onAnalyzeProgress(

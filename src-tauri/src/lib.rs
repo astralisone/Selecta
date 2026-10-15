@@ -1,5 +1,6 @@
 use track2mix_core::analyze::{self, AnalyzeOptions, AnalyzeSummary};
-use track2mix_core::export::{energy_score as energy_score_fn, write_m3u8};
+use track2mix_core::export::{energy_score as energy_score_fn, write_playlist, ExportReport};
+use track2mix_core::library::Source;
 use track2mix_core::keys::Camelot;
 use track2mix_core::store::{Store, TrackRow};
 use serde::{Deserialize, Serialize};
@@ -195,7 +196,10 @@ fn compat(state: tauri::State<'_, AppState>, args: CompatArgs) -> Result<Vec<UiT
 }
 
 #[tauri::command]
-fn export_playlist(state: tauri::State<'_, AppState>, args: ExportArgs) -> Result<usize, String> {
+fn export_playlist(
+    state: tauri::State<'_, AppState>,
+    args: ExportArgs,
+) -> Result<ExportReport, String> {
     let guard = state.inner.lock().unwrap();
     let s = guard.as_ref().ok_or_else(|| "no library open".to_string())?;
     let selected: Vec<TrackRow> = args
@@ -206,17 +210,22 @@ fn export_playlist(state: tauri::State<'_, AppState>, args: ExportArgs) -> Resul
     if selected.is_empty() {
         return Err("no tracks selected".to_string());
     }
-    write_m3u8(
+    // The format follows the file extension: .m3u8 Rekordbox, .nml Traktor,
+    // .crate Serato.
+    write_playlist(
         std::path::Path::new(&args.path),
         &args.playlist_name,
         &selected,
+        None,
     )
     .map_err(|e| format!("export: {:#}", e))
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct AnalyzeArgs {
-    pub xml_path: String,
+    /// `rekordbox | traktor | serato | directory`
+    pub source_kind: String,
+    pub source_path: String,
     pub db_path: String,
     pub limit: Option<usize>,
     #[serde(default)]
@@ -226,12 +235,14 @@ pub struct AnalyzeArgs {
 }
 
 #[tauri::command]
-async fn analyze_xml(
+async fn analyze_library(
     app: tauri::AppHandle,
     args: AnalyzeArgs,
 ) -> Result<AnalyzeSummary, String> {
+    let source = Source::from_kind(&args.source_kind, PathBuf::from(&args.source_path))
+        .map_err(|e| format!("{:#}", e))?;
     let opts = AnalyzeOptions {
-        xml_path: PathBuf::from(&args.xml_path),
+        source,
         db_path: PathBuf::from(&args.db_path),
         limit: args.limit,
         skip_analyzed: args.skip_analyzed,
@@ -274,7 +285,7 @@ pub fn run() {
             compat,
             export_playlist,
             default_db_path,
-            analyze_xml
+            analyze_library
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

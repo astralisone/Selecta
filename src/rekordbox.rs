@@ -2,6 +2,8 @@ use anyhow::{Context, Result};
 use serde::Deserialize;
 use std::path::PathBuf;
 
+use crate::library::{SourceTrack, TrackLocation};
+
 #[derive(Debug, Deserialize)]
 #[serde(rename = "DJ_PLAYLISTS")]
 pub struct RekordboxXml {
@@ -64,6 +66,29 @@ impl Track {
             103..=153 => 3,
             154..=204 => 4,
             _ => 5,
+        }
+    }
+
+    pub fn into_source_track(self) -> SourceTrack {
+        let location = if self.location.trim().is_empty() {
+            TrackLocation::Missing
+        } else {
+            match self.resolve_path() {
+                Some(p) => TrackLocation::File(p),
+                None => TrackLocation::Unparseable(self.location.clone()),
+            }
+        };
+        SourceTrack {
+            rating: self.rating_u8(),
+            bpm: self.bpm_f32().filter(|b| *b > 0.0),
+            play_count: self.play_count.parse().unwrap_or(0),
+            native_id: Some(self.track_id),
+            name: self.name,
+            artist: self.artist,
+            genre: self.genre,
+            label: self.label,
+            tonality: self.tonality,
+            location,
         }
     }
 }

@@ -1,9 +1,9 @@
 use anyhow::{anyhow, Result};
-use rusqlite::{params, Connection, Row};
+use rusqlite::{params, Connection, OptionalExtension, Row};
 use std::path::Path;
 
 use crate::features::Features;
-use crate::rekordbox::Track;
+use crate::library::SourceTrack;
 
 pub struct Store {
     conn: Connection,
@@ -156,10 +156,38 @@ impl Store {
             "CREATE INDEX IF NOT EXISTS idx_sub_genre ON tracks(sub_genre)",
             [],
         )?;
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_file_path ON tracks(file_path)",
+            [],
+        )?;
         Ok(Self { conn })
     }
 
-    pub fn upsert(&self, track: &Track, features: &Features, file_path: &str) -> Result<()> {
+    /// The ID to store a track under. A row that already points at the same
+    /// file keeps its ID, so importing one file from Rekordbox, Traktor,
+    /// Serato and a folder scan yields one row, not four. Otherwise the
+    /// source's own ID is used, or `path:<file>` for sources without one.
+    pub fn resolve_track_id(&self, native_id: Option<&str>, file_path: &str) -> Result<String> {
+        let existing: Option<String> = self
+            .conn
+            .query_row(
+                "SELECT track_id FROM tracks WHERE file_path = ?1 ORDER BY track_id LIMIT 1",
+                params![file_path],
+                |r| r.get(0),
+            )
+            .optional()?;
+        Ok(existing
+            .or_else(|| native_id.map(str::to_string))
+            .unwrap_or_else(|| format!("path:{}", file_path)))
+    }
+
+    pub fn upsert(
+        &self,
+        track_id: &str,
+        track: &SourceTrack,
+        features: &Features,
+        file_path: &str,
+    ) -> Result<()> {
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_secs() as i64)
@@ -197,16 +225,16 @@ impl Store {
                 analyzed_at = excluded.analyzed_at
             "#,
             params![
-                track.track_id,
+                track_id,
                 track.name,
                 track.artist,
                 track.genre,
                 sub_genre,
                 track.label,
-                track.bpm_f32(),
+                track.bpm,
                 track.tonality,
-                track.rating_u8(),
-                track.play_count.parse::<i64>().unwrap_or(0),
+                track.rating,
+                track.play_count,
                 file_path,
                 features.rms_mean,
                 features.rms_variance,
@@ -220,14 +248,22 @@ impl Store {
         Ok(())
     }
 
-    pub fn already_analyzed(&self, track_id: &str) -> bool {
-        self.conn
+    /// Whether this file (or this source ID) has already been analyzed.
+    pub fn already_analyzed(&self, native_id: Option<&str>, file_path: &str) -> Result<bool> {
+        let id = native_id
+            .map(str::to_string)
+            .unwrap_or_else(|| format!("path:{}", file_path));
+        Ok(self
+            .conn
             .query_row(
-                "SELECT 1 FROM tracks WHERE track_id = ?1 AND analyzed_at IS NOT NULL",
-                params![track_id],
+                "SELECT 1 FROM tracks \
+                 WHERE analyzed_at IS NOT NULL AND (file_path = ?1 OR track_id = ?2) \
+                 LIMIT 1",
+                params![file_path, id],
                 |_| Ok(()),
             )
-            .is_ok()
+            .optional()?
+            .is_some())
     }
 
     /// Top-N tracks sorted by a named feature. `genre` and `sub_genre` are
